@@ -29,7 +29,9 @@ namespace MattScripts {
         // Always has the sprite to look at the camera
         private void LateUpdate()
         {
-            gameObject.transform.LookAt(mainCamera.transform);
+            Vector3 newPos = mainCamera.transform.position - transform.position;
+            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(newPos.x, 0, newPos.z));
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, 0.5f);
         }
 
         // Changes the sprite to whatever action is passed into here.
