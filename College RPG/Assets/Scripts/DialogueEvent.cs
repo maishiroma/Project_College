@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 namespace MattScripts {
@@ -11,49 +12,103 @@ namespace MattScripts {
     public class DialogueEvent : BaseEvent
     {
         [Header("Sub Variables")]
+        [Range(0.01f,0.2f)]
+        public float typeWriteDelay;
         [TextArea(1, 4)]
         public string[] listOfDialogue;
+        public Sprite[] listOfPortraits;
 
         // Private Variables
         private TextMeshProUGUI dialogueUI;
+        private Image portaitUI;
+        private Image proceedIconUI;
         private int currDialogIndex;
+        private int currAnimatedIndex;
+        private bool isDisplayingText;
 
-        // Displays the given text to the UI, if the event is activated
+        // Checks to see if the length of the portraits are the same as the dialogue boxes
+		private void Start()
+		{
+            if(listOfDialogue.Length != listOfPortraits.Length)
+            {
+                Debug.LogError("The portait length must be the same as the dialogue length!");
+            }
+		}
+
+		// Displays the given text to the UI, if the event is activated
 		private void Update()
 		{
             if(HasActivated)
             {
                 if(Input.GetKeyDown(interactKey))
                 {
-                    if(currDialogIndex + 1 < listOfDialogue.Length)
+                    if(isDisplayingText == true)
                     {
-                        currDialogIndex++;
-                        dialogueUI.text = listOfDialogue[currDialogIndex];
+                        // We skip the animation and show the entire text
+                        currAnimatedIndex = listOfDialogue[currDialogIndex].Length;
+                    }
+                    else if(currDialogIndex + 1 < listOfDialogue.Length)
+                    {
+                        // We proceed to the next dialogue point
+                        currDialogIndex++;                       
+                        StartCoroutine(AnimateText());
                     }
                     else
                     {
+                        // The dialogue has completed so we stop it
                         EventOutcome();
                     }
                 }
             }
 		}
 
-        // We cache the dialogueUI in this call before we begin the update
+        // Sets up important values that will be needed to be set before the event starts
 		public override void EventSetup()
 		{
-            interactIcon.SetActive(false);
             GameManager.Instance.CurrentState = GameStates.EVENT;
+            interactIcon.SetActive(false);
+
+            // We cache the dialouge and image components for future use
+            // The childs in here may change depending on the ordering of the GameObjects in the UI scene
+            portaitUI = objectToActivate.transform.GetChild(0).GetComponent<Image>();
+            dialogueUI = objectToActivate.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+            proceedIconUI = objectToActivate.transform.GetChild(3).GetComponent<Image>();
+            dialogueUI.text = "";
             currDialogIndex = -1;
-            dialogueUI = objectToActivate.transform.GetChild(3).GetComponent<TextMeshProUGUI>();
+
+            // If we interact with this by going into it, we automatically start up the dialogue
+            if(!activateByInteract)
+            {
+                currDialogIndex++;                       
+                StartCoroutine(AnimateText());
+            }
 		}
 
         // When the dialogue is finished, we reset it
 		public override void EventOutcome()
         {
-            currDialogIndex = -1;
-            ResetEvent();
             GameManager.Instance.CurrentState = GameStates.NORMAL;
-            interactIcon.SetActive(true);
+            ResetEvent();
+        }
+    
+        // Animates the text to appear in a typewriter fashion!
+        private IEnumerator AnimateText()
+        {
+            isDisplayingText = true;
+            portaitUI.sprite = listOfPortraits[currDialogIndex];
+            proceedIconUI.enabled = false;
+            yield return new WaitForEndOfFrame();
+
+            for(currAnimatedIndex = 0; currAnimatedIndex < listOfDialogue[currDialogIndex].Length; ++currAnimatedIndex)
+            {
+                dialogueUI.text = listOfDialogue[currDialogIndex].Substring(0,currAnimatedIndex);
+                yield return new WaitForSeconds(typeWriteDelay);
+            }
+
+            dialogueUI.text = listOfDialogue[currDialogIndex];
+            proceedIconUI.enabled = true;
+            isDisplayingText = false;
+            yield return null;
         }
     }
 }

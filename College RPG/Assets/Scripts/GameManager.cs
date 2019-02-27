@@ -34,7 +34,7 @@ namespace MattScripts {
                 switch(currentState)
                 {
                     case GameStates.NORMAL:
-                        player.GetComponent<CharacterController>().EnableController(Quaternion.identity);
+                        player.GetComponent<CharacterController>().EnableController();
                         break;
                     case GameStates.EVENT:
                         player.GetComponent<CharacterController>().DisableController();

@@ -41,9 +41,8 @@ namespace MattScripts {
         }
 
         // Reactivates the controller. Should be used instead of calling .enabled
-        public void EnableController(Quaternion newRotation)
+        public void EnableController()
         {
-            targetRotation = newRotation;
             enabled = true;
         }
 
