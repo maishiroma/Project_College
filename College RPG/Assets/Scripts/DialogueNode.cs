@@ -19,8 +19,11 @@ namespace MattScripts {
         [TextArea(1, 4)]
         public string dialogueText = "";
 
+        [Header("External References")]
+        public GameObject endEvent;         // This GameObject corresponds to an Event that can occur once this is completed
+
         [Header("List Variables")]
-        public int nodeId = -1;                     // Uniquly identifies each Dialogue node based on the current Dialogue Event
+        public int nodeId = -1;                     // Identifies each Dialogue node based on the current Dialogue Event. This should be the same number as its array index position
         public int[] childrenNodeIds;               // References to any of the other dialouge options that are in the current Dialogue Event
 
         // Constructor that createa a Node with no children
@@ -84,14 +87,23 @@ namespace MattScripts {
             return false;
         }
 
-        // Returns the first child index of this dialogue. If there are no childre, return -1
-        public int GetFirstChild()
+        // Returns the first child Id of this dialogue. If there are no childre, return -1
+        public int GetFirstChildId()
         {
             if(CheckIfChildrenExist())
             {
                 return childrenNodeIds[0];
             }
             return -1;
+        }
+    
+        // If an event is associated with this dialogue, this will activate it upon being called
+        public void ActivateEvent()
+        {
+            if(endEvent != null)
+            {
+                endEvent.SetActive(true);
+            }
         }
     }
 }
