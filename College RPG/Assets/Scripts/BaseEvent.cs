@@ -42,8 +42,8 @@ namespace MattScripts {
                 else
                 {
                     // Start the event automatically
-                    EventSetup();
                     objectToActivate.SetActive(true);
+                    EventSetup();
                     hasActivated = true;
                 }
             }
@@ -57,8 +57,8 @@ namespace MattScripts {
                 if(activateByInteract && Input.GetKeyDown(interactKey))
                 {
                     // Check if the player has hit the approperiate button and starts the event accordingly
-                    EventSetup();
                     objectToActivate.SetActive(true);
+                    EventSetup();
                     hasActivated = true;
                 }
             }

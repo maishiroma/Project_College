@@ -14,25 +14,33 @@ namespace MattScripts {
         [Header("Sub Variables")]
         [Range(0.01f,0.2f)]
         public float typeWriteDelay;
-        [TextArea(1, 4)]
-        public string[] listOfDialogue;
-        public Sprite[] listOfPortraits;
+        public DialogueNode[] listOfDialogue;
+
+        [Header("Sub UI Variables")]
+        public GameObject playerChoiceUI;
 
         // Private Variables
+        private Transform choiceBoxUI;
+        private DialogueNode currentDialogueNode;
+        private Animator dialogueWindowUI;
         private TextMeshProUGUI dialogueUI;
+        private TextMeshProUGUI nameUI;
         private Image portaitUI;
         private Image proceedIconUI;
-        private int currDialogIndex;
         private int currAnimatedIndex;
         private bool isDisplayingText;
+        private bool hasShownOptions;
 
-        // Checks to see if the length of the portraits are the same as the dialogue boxes
+        // Caches the dialouge and image components for future use
 		private void Start()
 		{
-            if(listOfDialogue.Length != listOfPortraits.Length)
-            {
-                Debug.LogError("The portait length must be the same as the dialogue length!");
-            }
+            // The childs in here may change depending on the ordering of the GameObjects in the UI scene
+            portaitUI = objectToActivate.transform.GetChild(0).GetComponent<Image>();
+            dialogueUI = objectToActivate.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+            proceedIconUI = objectToActivate.transform.GetChild(3).GetComponent<Image>();
+            nameUI = objectToActivate.transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>();
+            dialogueWindowUI = objectToActivate.GetComponent<Animator>();
+            choiceBoxUI = playerChoiceUI.transform.GetChild(1);
 		}
 
 		// Displays the given text to the UI, if the event is activated
@@ -40,23 +48,35 @@ namespace MattScripts {
 		{
             if(HasActivated)
             {
+                if(hasShownOptions == true)
+                {
+                    // TODO: Select the option that is currently highlighted
+                }
+
                 if(Input.GetKeyDown(interactKey))
                 {
-                    if(isDisplayingText == true)
+                    if(hasShownOptions == true)
                     {
-                        // We skip the animation and show the entire text
-                        currAnimatedIndex = listOfDialogue[currDialogIndex].Length;
-                    }
-                    else if(currDialogIndex + 1 < listOfDialogue.Length)
-                    {
-                        // We proceed to the next dialogue point
-                        currDialogIndex++;                       
-                        StartCoroutine(AnimateText());
+                        // TODO: Need to fill in logic of selecting an option with W or S
                     }
                     else
                     {
-                        // The dialogue has completed so we stop it
-                        EventOutcome();
+                        if(isDisplayingText == true)
+                        {
+                            // We skip the animation and show the entire text
+                            currAnimatedIndex = currentDialogueNode.dialogueText.Length;
+                        }
+                        else if(currentDialogueNode.CheckIfChildrenExist() == true)
+                        {
+                            // We proceed to the next dialogue point
+                            currentDialogueNode = listOfDialogue[currentDialogueNode.GetFirstChild()];
+                            StartCoroutine(AnimateText());
+                        }
+                        else
+                        {
+                            // The dialogue has completed so we stop it
+                            EventOutcome();
+                        }
                     }
                 }
             }
@@ -68,47 +88,86 @@ namespace MattScripts {
             GameManager.Instance.CurrentState = GameStates.EVENT;
             interactIcon.SetActive(false);
 
-            // We cache the dialouge and image components for future use
-            // The childs in here may change depending on the ordering of the GameObjects in the UI scene
-            portaitUI = objectToActivate.transform.GetChild(0).GetComponent<Image>();
-            dialogueUI = objectToActivate.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            proceedIconUI = objectToActivate.transform.GetChild(3).GetComponent<Image>();
             dialogueUI.text = "";
-            currDialogIndex = -1;
+            nameUI.text = "";
+            portaitUI.sprite = null;
+            currentDialogueNode = listOfDialogue[0];
 
             // If we interact with this by going into it, we automatically start up the dialogue
             if(!activateByInteract)
             {
-                currDialogIndex++;                       
                 StartCoroutine(AnimateText());
             }
+            dialogueWindowUI.SetBool("isOpen", true);
 		}
 
         // When the dialogue is finished, we reset it
 		public override void EventOutcome()
         {
             GameManager.Instance.CurrentState = GameStates.NORMAL;
-            ResetEvent();
+            dialogueWindowUI.SetBool("isOpen", false);
+            Invoke("ResetEvent", 1f);
         }
-    
+
+        // If we have choices, we fill them out with whatever dialogue node we are on.
+        private void FillOptions()
+        {
+            if(playerChoiceUI != null && currentDialogueNode.CheckIfChildrenExist())
+            {
+                int currIndexOfChoices = 0;
+                foreach(int currChildId in currentDialogueNode.childrenNodeIds)
+                {
+                    if(currChildId != -1 && currChildId > 0 && currChildId < listOfDialogue.Length)
+                    {
+                        choiceBoxUI.GetChild(currIndexOfChoices).GetComponent<TextMeshProUGUI>().text = listOfDialogue[currChildId].choiceText;
+                        choiceBoxUI.GetChild(currIndexOfChoices).gameObject.SetActive(true);
+                        currIndexOfChoices++;
+                    }
+                }
+                playerChoiceUI.SetActive(true);
+                hasShownOptions = true;
+            }
+        }
+
+        // Clears all of the text from the choices
+        private void ClearOptions()
+        {
+            for(int currentIndex = 0; currentIndex < 4; ++currentIndex)
+            {
+                choiceBoxUI.GetChild(currentIndex).GetComponent<TextMeshProUGUI>().text = "";
+                choiceBoxUI.GetChild(currentIndex).gameObject.SetActive(false);
+            }
+            playerChoiceUI.SetActive(false);
+            hasShownOptions = false;
+        }
+
         // Animates the text to appear in a typewriter fashion!
         private IEnumerator AnimateText()
         {
             isDisplayingText = true;
-            portaitUI.sprite = listOfPortraits[currDialogIndex];
+            portaitUI.sprite = currentDialogueNode.portrait;
+            nameUI.text = currentDialogueNode.nameText;
+
             proceedIconUI.enabled = false;
             yield return new WaitForEndOfFrame();
 
-            for(currAnimatedIndex = 0; currAnimatedIndex < listOfDialogue[currDialogIndex].Length; ++currAnimatedIndex)
+            for(currAnimatedIndex = 0; currAnimatedIndex < currentDialogueNode.dialogueText.Length; ++currAnimatedIndex)
             {
-                dialogueUI.text = listOfDialogue[currDialogIndex].Substring(0,currAnimatedIndex);
+                dialogueUI.text = currentDialogueNode.dialogueText.Substring(0,currAnimatedIndex);
                 yield return new WaitForSeconds(typeWriteDelay);
             }
 
-            dialogueUI.text = listOfDialogue[currDialogIndex];
+            dialogueUI.text = currentDialogueNode.dialogueText;
             proceedIconUI.enabled = true;
             isDisplayingText = false;
             yield return null;
+
+            if(currentDialogueNode.CheckIfMultipleChilrenExist())
+            {
+                ClearOptions();
+                FillOptions();
+                yield return new WaitForEndOfFrame();
+            }
         }
     }
 }
