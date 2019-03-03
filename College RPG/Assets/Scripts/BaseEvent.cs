@@ -16,10 +16,10 @@ namespace MattScripts {
         public bool showTriggerArea;
         public KeyCode interactKey;
 
-        [Header("Base Outside Refs")]        
+        [Header("Base Outside Refs")]     
         public BoxCollider activateArea;
-        public GameObject objectToActivate;
-        public GameObject interactIcon;
+        public GameObject interactIconUI;
+        public GameObject objectToInteract;
 
         // Private Variables
         private bool hasActivated;
@@ -37,12 +37,12 @@ namespace MattScripts {
                 if(activateByInteract)
                 {
                     // Display HUD icon to show that the player can interact with this.
-                    interactIcon.SetActive(true);
+                    interactIconUI.SetActive(true);
                 }
                 else
                 {
                     // Start the event automatically
-                    objectToActivate.SetActive(true);
+                    objectToInteract.SetActive(true);
                     EventSetup();
                     hasActivated = true;
                 }
@@ -54,10 +54,16 @@ namespace MattScripts {
 		{
             if(other.CompareTag("Player") && hasActivated == false)
             {
+                // If the player is within the trigger still, but the UI hasn't activated, we make sure we activate it
+                if(activateByInteract == true && interactIconUI.activeInHierarchy == false)
+                {
+                    interactIconUI.SetActive(true);
+                }
+
                 if(activateByInteract && Input.GetKeyDown(interactKey))
                 {
                     // Check if the player has hit the approperiate button and starts the event accordingly
-                    objectToActivate.SetActive(true);
+                    objectToInteract.SetActive(true);
                     EventSetup();
                     hasActivated = true;
                 }
@@ -72,7 +78,7 @@ namespace MattScripts {
                 if(activateByInteract)
                 {
                     // Remove the HUD for interacting with this
-                    interactIcon.SetActive(false);
+                    interactIconUI.SetActive(false);
                 }
             }
 		}
@@ -93,8 +99,8 @@ namespace MattScripts {
         {
             if(hasActivated == true)
             {
-                interactIcon.SetActive(false);
-                objectToActivate.SetActive(false);
+                interactIconUI.SetActive(false);
+                objectToInteract.SetActive(false);
                 hasActivated = false;
             }
         }
@@ -107,8 +113,12 @@ namespace MattScripts {
             return;
         }
 
-        // Every class that inherits from this will have to define how each event will end.
-        public abstract void EventOutcome();
+        // Called when the event is finished
+        // Can be overriden/expanded if needed, since the default behvior sets isActivated to true.
+        public virtual void EventOutcome()
+        {
+            hasActivated = true;
+        }
     }
 }
 

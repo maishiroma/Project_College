@@ -15,6 +15,7 @@ namespace MattScripts {
         [Range(0.01f,0.2f)]
         public float typeWriteDelay;                    // Amount of time it takes to display text to the player
         public DialogueNode[] listOfDialogue;           // Array of all of the DialogueNodes that correspond to this event
+        public BaseEvent endDialogueEvent;              // Does this Dialogue have an end event?
 
         [Header("Sub UI Variables")]
         public GameObject playerChoiceUI;               // Reference to the Player Choice UI that contains the UI for player decisions
@@ -24,6 +25,7 @@ namespace MattScripts {
         private Transform choiceBoxUI;                  // Reference to the UI element that contains all of the choices
 
         private Animator dialogueWindowAnimator;              // Hard references to all of the UI elements stored for dialouges
+        private Animator choiceWindowAnimator;
         private TextMeshProUGUI dialogueUI;
         private TextMeshProUGUI nameUI;
         private Image portaitUI;
@@ -34,19 +36,21 @@ namespace MattScripts {
         private int currChoiceIndex;                    // The index number that is used to identify what choice the player selected
         private int numbOfAvailableChoices;             // Keeps track of the number of choices the player can select from
 
-        private bool hasFinishedAnimating;              // Has this dialogue finished showing all of its text
+        private bool hasFinishedPlaying;                // Has this dialogue finished showing all of its text and events?
         private bool hasShownChoices;                   // Has this dialogue shown all of its choices, if necessary
 
         // Caches the dialouge and image components for future use
 		private void Start()
 		{
             // The childs in here may change depending on the ordering of the GameObjects in the UI scene
-            portaitUI = objectToActivate.transform.GetChild(0).GetComponent<Image>();
-            dialogueUI = objectToActivate.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            proceedIconUI = objectToActivate.transform.GetChild(3).GetComponent<Image>();
-            nameUI = objectToActivate.transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>();
-            dialogueWindowAnimator = objectToActivate.GetComponent<Animator>();
+            portaitUI = objectToInteract.transform.GetChild(0).GetComponent<Image>();
+            dialogueUI = objectToInteract.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+            proceedIconUI = objectToInteract.transform.GetChild(3).GetComponent<Image>();
+            nameUI = objectToInteract.transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>();
+            dialogueWindowAnimator = objectToInteract.GetComponent<Animator>();
+
             choiceBoxUI = playerChoiceUI.transform.GetChild(1);
+            choiceWindowAnimator = playerChoiceUI.GetComponent<Animator>();
 		}
 
 		// Displays the given text to the UI, if the event is activated
@@ -56,6 +60,7 @@ namespace MattScripts {
             {
                 if(hasShownChoices == true)
                 {
+                    // Handles moving the player input up and down when the player is selecting an option
                     if(Input.GetKeyDown(KeyCode.W) && currChoiceIndex > 0)
                     {
                         ChangeSelectedText(currChoiceIndex, currChoiceIndex - 1);
@@ -72,11 +77,12 @@ namespace MattScripts {
                 {
                     if(hasShownChoices == true)
                     {
+                        // We selected a choice and we are running it
                         StartCoroutine(SelectedChoice());
                     }
                     else
                     {
-                        if(hasFinishedAnimating == true)
+                        if(hasFinishedPlaying == false)
                         {
                             // We skip the animation and show the entire text
                             currCharIndex = listOfDialogue[currentDialogueId].dialogueText.Length;
@@ -86,6 +92,12 @@ namespace MattScripts {
                             // We proceed to the next dialogue point
                             currentDialogueId = listOfDialogue[currentDialogueId].GetFirstChildId();
                             StartCoroutine(AnimateText());
+                            StartCoroutine(StartDialogueNodeEvent());
+                        }
+                        else if(endDialogueEvent != null)
+                        {
+                            // If there is an ending event for this dialogue, we activate it here
+                            StartCoroutine(StartDialogueEventEnd());
                         }
                         else
                         {
@@ -101,36 +113,37 @@ namespace MattScripts {
 		public override void EventSetup()
 		{
             GameManager.Instance.CurrentState = GameStates.EVENT;
-            interactIcon.SetActive(false);
+            interactIconUI.SetActive(false);
 
             dialogueUI.text = "";
             nameUI.text = "";
             portaitUI.sprite = null;
             currentDialogueId = 0;
 
-            // If we interact with this by going into it, we automatically start up the dialogue
-            if(!activateByInteract)
-            {
-                StartCoroutine(AnimateText());
-            }
             dialogueWindowAnimator.SetBool("isOpen", true);
+            StartCoroutine(AnimateText());
+            StartCoroutine(StartDialogueNodeEvent());
 		}
 
         // When the dialogue is finished, we reset it
 		public override void EventOutcome()
         {
+            base.EventOutcome();
             GameManager.Instance.CurrentState = GameStates.NORMAL;
-            listOfDialogue[currentDialogueId].ActivateEvent();
             dialogueWindowAnimator.SetBool("isOpen", false);
-            Invoke("ResetEvent", 1f);
+            Invoke("ResetEvent", 0.5f);
         }
 
-        // When called, will hide the dialogue box without ending the conversation
-        public void HideDialogueBox()
+		// When called, will hide the dialogue box without ending the conversation
+		public void HideDialogueBox()
         {
             if(dialogueWindowAnimator.GetBool("isOpen") == true)
             {
                 dialogueWindowAnimator.SetBool("isOpen", false);
+            }
+            if(choiceWindowAnimator.GetBool("isOpen") == true)
+            {
+                choiceWindowAnimator.SetBool("isOpen", false);
             }
         }
 
@@ -140,6 +153,10 @@ namespace MattScripts {
             if(dialogueWindowAnimator.GetBool("isOpen") == false)
             {
                 dialogueWindowAnimator.SetBool("isOpen", true);
+            }
+            if(choiceWindowAnimator.GetBool("isOpen") == false)
+            {
+                choiceWindowAnimator.SetBool("isOpen", true);
             }
         }
 
@@ -165,7 +182,7 @@ namespace MattScripts {
                 }
                 // We then set the first option as the selected choice and activate the window
                 choiceBoxUI.GetChild(currChoiceIndex).GetComponent<TextMeshProUGUI>().colorGradientPreset = selectChoiceHighlight;
-                playerChoiceUI.SetActive(true);
+                choiceWindowAnimator.SetBool("isOpen", true);
                 hasShownChoices = true;
             }
         }
@@ -179,7 +196,7 @@ namespace MattScripts {
                 choiceBoxUI.GetChild(currentIndex).gameObject.SetActive(false);
             }
             choiceBoxUI.GetChild(currChoiceIndex).GetComponent<TextMeshProUGUI>().colorGradientPreset = null;
-            playerChoiceUI.SetActive(false);
+            choiceWindowAnimator.SetBool("isOpen", false);
             hasShownChoices = false;
         }
 
@@ -194,7 +211,7 @@ namespace MattScripts {
         private IEnumerator AnimateText()
         {
             // We initialize the animation to start and fill in the name and portraits
-            hasFinishedAnimating = true;
+            hasFinishedPlaying = false;
             portaitUI.sprite = listOfDialogue[currentDialogueId].portrait;
             nameUI.text = listOfDialogue[currentDialogueId].nameText;
             proceedIconUI.enabled = false;
@@ -210,7 +227,11 @@ namespace MattScripts {
             // We then fill in the rest of the dialogue and enable the rest of the window to appear
             dialogueUI.text = listOfDialogue[currentDialogueId].dialogueText;
             proceedIconUI.enabled = true;
-            hasFinishedAnimating = false;
+            if(listOfDialogue[currentDialogueId].CheckIfEventExists() == false)
+            {
+                // If this dialogue has no event, we tell the script that it finished playing out.
+                hasFinishedPlaying = true;
+            }
             yield return null;
 
             // If we have choices present, we activate them here
@@ -234,8 +255,35 @@ namespace MattScripts {
 
             // We then start the next dialogue using the newly updated dialogueID
             StartCoroutine(AnimateText());
+            StartCoroutine(StartDialogueNodeEvent());
             hasShownChoices = false;
             yield return new WaitForEndOfFrame();
+        }
+    
+        // Plays out an event if the specific dialogue node has one
+        private IEnumerator StartDialogueNodeEvent()
+        {
+            if(listOfDialogue[currentDialogueId].CheckIfEventExists() == true)
+            {
+                BaseEvent currEvent = listOfDialogue[currentDialogueId].endEvent.GetComponent<BaseEvent>();
+                if(currEvent.HasActivated == false)
+                {
+                    listOfDialogue[currentDialogueId].ActivateEvent();
+                    yield return new WaitUntil(() => currEvent.HasActivated == false);
+                }
+
+                // Once the dialogue has finished playing out, we tell the Script that it can continue
+                hasFinishedPlaying = true;
+            }
+            yield return null;
+        }
+    
+        // Plays out the final event that the dialogue event has one
+        private IEnumerator StartDialogueEventEnd()
+        {
+            endDialogueEvent.gameObject.SetActive(true);
+            yield return new WaitUntil(() => endDialogueEvent.HasActivated == false);
+            EventOutcome();
         }
     }
 }

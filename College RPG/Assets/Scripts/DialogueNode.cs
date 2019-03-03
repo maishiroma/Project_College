@@ -20,7 +20,7 @@ namespace MattScripts {
         public string dialogueText = "";
 
         [Header("External References")]
-        public GameObject endEvent;         // This GameObject corresponds to an Event that can occur once this is completed
+        public BaseEvent endEvent;         // This GameObject corresponds to an Event that can occur once this is completed
 
         [Header("List Variables")]
         public int nodeId = -1;                     // Identifies each Dialogue node based on the current Dialogue Event. This should be the same number as its array index position
@@ -97,12 +97,22 @@ namespace MattScripts {
             return -1;
         }
     
-        // If an event is associated with this dialogue, this will activate it upon being called
-        public void ActivateEvent()
+        // Returns true if there is a gameobject associated with this dialogue that has a BaseEvent component
+        public bool CheckIfEventExists()
         {
             if(endEvent != null)
             {
-                endEvent.SetActive(true);
+                return true;
+            }
+            return false;
+        }
+
+        // If an event is associated with this dialogue, this will activate it upon being called
+        public void ActivateEvent()
+        {
+            if(CheckIfEventExists())
+            {
+                endEvent.gameObject.SetActive(true);
             }
         }
     }
