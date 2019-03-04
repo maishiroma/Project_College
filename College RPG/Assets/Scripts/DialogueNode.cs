@@ -1,6 +1,5 @@
 ﻿/*  This stores all of the information that a dialoge setpiece has.
- * 
- *  TODO: Have a way to easily fill in all of this information
+ *  Contains useful methods and variables that allow for the streamlineing of setting this up.
  */
 
 using System.Collections;
@@ -13,51 +12,99 @@ namespace MattScripts {
     public class DialogueNode {
 
         [Header("Dialogue Variables")]
-        public Sprite portrait = null;
-        public string nameText = "";
-        public string choiceText = "";
+        [SerializeField]
+        private Sprite portrait = null;
+        [SerializeField]
+        private string nameText = "";
+        [SerializeField]
+        private string choiceText = "";
+        [SerializeField]
         [TextArea(1, 4)]
-        public string dialogueText = "";
+        private string dialogueText = "";
 
         [Header("External References")]
-        public BaseEvent endEvent;         // This GameObject corresponds to an Event that can occur once this is completed
+        [SerializeField]
+        private BaseEvent endEvent;                  // This GameObject corresponds to an Event that can occur once this is completed
 
         [Header("List Variables")]
-        public int nodeId = -1;                     // Identifies each Dialogue node based on the current Dialogue Event. This should be the same number as its array index position
-        public int[] childrenNodeIds;               // References to any of the other dialouge options that are in the current Dialogue Event
+        [SerializeField]
+        private int nodeId = -1;                     // Identifies each Dialogue node based on the current Dialogue Event. This should be the same number as its array index position
+        [SerializeField]
+        private int[] childrenNodeIds;               // References to any of the other dialouge options that are in the current Dialogue Event
+
+        // Getters/Setters
+        public Sprite DialoguePortrait {
+            get {return portrait;}
+        }
+
+        public string DialogueName {
+            get {return nameText;}
+        }
+
+        public string DialogueChoiceText {
+            get {return choiceText;}
+        }
+
+        public string DialogueText {
+            get {return dialogueText;}
+        }
+
+        public int DialogueId{
+            get {return nodeId;}
+        }
+
+        public BaseEvent DialogueEvent {
+            get {return endEvent;}
+        }
 
         // Constructor that createa a Node with no children
-        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId)
+        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, BaseEvent endEvent = null)
         {
             this.portrait = portrait;
             this.nameText = nameText;
             this.choiceText = choiceText;
             this.dialogueText = dialogueText;
             this.nodeId = nodeId;
+            this.endEvent = endEvent;
         }
 
         // Constructor that create a Node with one child node
-        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int childNodeId)
+        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int childNodeId, BaseEvent endEvent = null)
         {
             this.portrait = portrait;
             this.nameText = nameText;
             this.choiceText = choiceText;
             this.dialogueText = dialogueText;
             this.nodeId = nodeId;
+            this.endEvent = endEvent;
 
             this.childrenNodeIds = new int[1] {childNodeId};
         }
 
         // Constructor that create a Node that has multiple child nodes
-        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int[] childrenNodeIds)
+        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int[] childrenNodeIds, BaseEvent endEvent = null)
         {
             this.portrait = portrait;
             this.nameText = nameText;
             this.choiceText = choiceText;
             this.dialogueText = dialogueText;
             this.nodeId = nodeId;
+            this.endEvent = endEvent;
 
             this.childrenNodeIds = childrenNodeIds;
+        }
+
+        // Retrieves the Id of a child dialogue node at the specified index point. If the index point is invalid, -1 is returned
+        public int GetChildIdAtIndex(int indexPoint)
+        {
+            if(CheckIfChildrenExist())
+            {
+                if(indexPoint < childrenNodeIds.Length)
+                {
+                    return childrenNodeIds[indexPoint];
+                }
+            }
+            return -1;
         }
 
         // Returns true if the node has children
@@ -87,16 +134,6 @@ namespace MattScripts {
             return false;
         }
 
-        // Returns the first child Id of this dialogue. If there are no childre, return -1
-        public int GetFirstChildId()
-        {
-            if(CheckIfChildrenExist())
-            {
-                return childrenNodeIds[0];
-            }
-            return -1;
-        }
-    
         // Returns true if there is a gameobject associated with this dialogue that has a BaseEvent component
         public bool CheckIfEventExists()
         {
@@ -114,6 +151,18 @@ namespace MattScripts {
             {
                 endEvent.gameObject.SetActive(true);
             }
+        }
+
+        // A helper method that checks if the end event in the dialogue is completed.
+        // Returns false if the event is not done yet.
+        // Returns true if there is no event or if the event is done
+        public bool CheckIfEventIsCompleted()
+        {
+            if(CheckIfEventExists())
+            {
+                return endEvent.HasActivated;   
+            }
+            return true;
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿/*  This class defines the basis for events in the game and will have various useful functions on
- *  how the game handles these events.
+﻿/*  This class defines all core functionalities for every events in the game and will have various useful functions on
+ *  how the game handles these.
  * 
  */
 
@@ -21,8 +21,8 @@ namespace MattScripts {
         public GameObject interactIconUI;
         public GameObject objectToInteract;
 
-        // Private Variables
-        private bool hasActivated;
+        // Protected Variables
+        protected bool hasActivated;
 
         // Getters
         public bool HasActivated {
@@ -114,11 +114,8 @@ namespace MattScripts {
         }
 
         // Called when the event is finished
-        // Can be overriden/expanded if needed, since the default behvior sets isActivated to true.
-        public virtual void EventOutcome()
-        {
-            hasActivated = true;
-        }
+        // Must be defined in all subclasses.
+        public abstract void EventOutcome();
     }
 }
 

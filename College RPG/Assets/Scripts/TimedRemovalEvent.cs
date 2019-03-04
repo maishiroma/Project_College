@@ -25,7 +25,7 @@ namespace MattScripts {
         // Only works if the GameObject is not destroyed
 		public override void ResetEvent()
 		{
-            if(shouldDeactivate == true && objectToInteract != null && HasActivated == true)
+            if(shouldDeactivate == true && objectToInteract != null && hasActivated == true)
             {
                 objectToInteract.SetActive(true);
                 base.ResetEvent();
@@ -37,8 +37,8 @@ namespace MattScripts {
         {
             if(shouldDeactivate)
             {
+                hasActivated = true;
                 objectToInteract.SetActive(false);
-                base.EventOutcome();
             }
             else
             {
