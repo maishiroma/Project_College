@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 
 namespace MattScripts {
     
@@ -28,38 +30,12 @@ namespace MattScripts {
         public Transform travelSpot;
         public Image fadeOverlay;
 
-        // Private Variables
-        private float alpha = 0f;
-        private bool isTraveling = false;
-        private bool isFading = false;
-
-		// Handles the core logic of the transition cutscene
-		private void Update()
-        {
-            if(isTraveling == true)
-            {
-                // Fading to black
-                if(isFading == true)
-                {
-                    alpha = Mathf.Lerp(alpha, 1, lerpValue);
-                }
-                // Fading to transparent
-                else
-                {
-                    alpha = Mathf.Lerp(alpha, 0, lerpValue);
-                }
-                // Updating the alpha of the fadeout
-                Color newColor = new Color(fadeOverlay.color.r, fadeOverlay.color.g, fadeOverlay.color.b, alpha);
-                fadeOverlay.color = newColor;
-            }
-        }
-
         // While the player entered the trigger zone, they will travel to another point
         private void OnTriggerEnter(Collider collision)
         {
-            if(isTraveling == false && collision.CompareTag("Player"))
+            if(collision.CompareTag("Player") && GameManager.Instance.CurrentState != GameStates.TRAVEL)
             {
-                isTraveling = true;
+                GameManager.Instance.CurrentState = GameStates.TRAVEL;
                 StartCoroutine("TravelCutscene", collision.gameObject);
             }
         }
@@ -71,9 +47,8 @@ namespace MattScripts {
             CharacterController playerController = player.GetComponent<CharacterController>();
 
             // We stop the player from moving and fade to black
-            GameManager.Instance.CurrentState = GameStates.TRAVEL;
             playerController.DisableController();
-            isFading = true;
+            fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
             yield return new WaitForSeconds(fadeTime);
 
             if(toNewScene)
@@ -98,12 +73,11 @@ namespace MattScripts {
                 yield return new WaitForFixedUpdate();
 
                 // We then tell the transition to fade back in
-                isFading = false;
+                fadeOverlay.CrossFadeAlpha(0, fadeTime, true);
                 yield return new WaitForSeconds(fadeTime);
 
                 // We tell this invoke we are done!
                 playerController.EnableController();
-                isTraveling = false;
                 GameManager.Instance.CurrentState = GameStates.NORMAL;
                 yield return null;
             }
@@ -111,37 +85,79 @@ namespace MattScripts {
     }
 
     // This is used to make a custom editor so that this class can be more flexible in displaying information
+    // Refer to https://docs.unity3d.com/ScriptReference/Editor.html for help on this
     [CustomEditor(typeof(TransitionArea))]
+    [CanEditMultipleObjects]
     public class TransitionAreaEditor : Editor {
 
-        public override void OnInspectorGUI()
+        SerializedProperty toNewScene_Prop;
+        SerializedProperty newSceneIndex_Prop;
+        SerializedProperty fadeTime_Prop;
+        SerializedProperty lerpValue_Prop;
+
+        SerializedProperty cameraMinX_Prop;
+        SerializedProperty cameraMaxX_Prop;
+        SerializedProperty cameraMinY_Prop;
+        SerializedProperty cameraMaxY_Prop;
+        SerializedProperty cameraMinZ_Prop;
+        SerializedProperty cameraMaxZ_Prop;
+
+        SerializedProperty activateArea_Prop;
+        SerializedProperty travelSpot_Prop;
+        SerializedProperty fadeOverlay_Prop;
+
+        // Sets up all of the serialized properties
+		private void OnEnable()
+		{
+            toNewScene_Prop = serializedObject.FindProperty("toNewScene");
+            newSceneIndex_Prop = serializedObject.FindProperty("newSceneIndex");
+            fadeTime_Prop = serializedObject.FindProperty("fadeTime");
+            lerpValue_Prop = serializedObject.FindProperty("lerpValue");
+
+            cameraMinX_Prop = serializedObject.FindProperty("cameraMinX");
+            cameraMaxX_Prop = serializedObject.FindProperty("cameraMaxX");
+            cameraMinY_Prop = serializedObject.FindProperty("cameraMinY");
+            cameraMaxY_Prop = serializedObject.FindProperty("cameraMaxY");
+            cameraMinZ_Prop = serializedObject.FindProperty("cameraMinZ");
+            cameraMaxZ_Prop = serializedObject.FindProperty("cameraMaxZ");
+
+            activateArea_Prop = serializedObject.FindProperty("activateArea");
+            travelSpot_Prop = serializedObject.FindProperty("travelSpot");
+            fadeOverlay_Prop = serializedObject.FindProperty("fadeOverlay");
+		}
+
+        // We override the Editor GUI on how these values are seen with our own logic
+		public override void OnInspectorGUI()
         {
-            TransitionArea myScript = target as TransitionArea;
+            // ALWAYS CALL THIS FIRST here!
+            serializedObject.Update();
 
             // This toggles showing specific variables depending on the boolean passed
             GUILayout.Space(5f);
-            myScript.toNewScene = EditorGUILayout.Toggle("Warp To New Scene?", myScript.toNewScene);
+            toNewScene_Prop.boolValue = EditorGUILayout.Toggle("Warp To New Scene?", toNewScene_Prop.boolValue);
             EditorGUI.indentLevel++;
-            if(myScript.toNewScene == true)
+            if(toNewScene_Prop.boolValue == true)
             {                
-                myScript.newSceneIndex = EditorGUILayout.IntField("New Scene Index", myScript.newSceneIndex);
+                newSceneIndex_Prop.intValue = EditorGUILayout.IntField("New Scene Index", newSceneIndex_Prop.intValue);
                 EditorGUI.indentLevel--;
             }
             else
             {
-                myScript.travelSpot = (Transform)EditorGUILayout.ObjectField("Travel Spot", myScript.travelSpot, typeof(GameObject), true);
+                travelSpot_Prop.objectReferenceValue = EditorGUILayout.ObjectField("Travel Spot", travelSpot_Prop.objectReferenceValue, typeof(Transform), true);
 
                 GUILayout.Space(5f);
                 EditorGUILayout.PrefixLabel("Camera Variables");
                 GUILayout.Space(3f);
 
                 EditorGUI.indentLevel++;
-                myScript.cameraMinX = EditorGUILayout.FloatField("Min X", myScript.cameraMinX);
-                myScript.cameraMaxX = EditorGUILayout.FloatField("Max X", myScript.cameraMaxX);
-                myScript.cameraMinY = EditorGUILayout.FloatField("Min Y", myScript.cameraMinY);
-                myScript.cameraMaxY = EditorGUILayout.FloatField("Max Y", myScript.cameraMaxY);
-                myScript.cameraMinZ = EditorGUILayout.FloatField("Min Z", myScript.cameraMinZ);
-                myScript.cameraMaxZ = EditorGUILayout.FloatField("Max Z", myScript.cameraMaxZ);
+                cameraMinX_Prop.floatValue = EditorGUILayout.FloatField("Min X", cameraMinX_Prop.floatValue);
+                cameraMaxX_Prop.floatValue = EditorGUILayout.FloatField("Max X", cameraMaxX_Prop.floatValue);
+
+                cameraMinY_Prop.floatValue = EditorGUILayout.FloatField("Min Y", cameraMinY_Prop.floatValue);
+                cameraMaxY_Prop.floatValue = EditorGUILayout.FloatField("Max Y", cameraMaxY_Prop.floatValue);
+
+                cameraMinZ_Prop.floatValue = EditorGUILayout.FloatField("Min Z", cameraMinZ_Prop.floatValue);
+                cameraMaxZ_Prop.floatValue = EditorGUILayout.FloatField("Max Z", cameraMaxZ_Prop.floatValue);
                 EditorGUI.indentLevel--;
                 EditorGUI.indentLevel--;
             }
@@ -151,8 +167,8 @@ namespace MattScripts {
             GUILayout.Space(3f);
 
             EditorGUI.indentLevel++;
-            myScript.fadeTime = EditorGUILayout.Slider("Fade Time", myScript.fadeTime, 1f, 2f);
-            myScript.lerpValue = EditorGUILayout.Slider("Lerp Value", myScript.lerpValue, 0.1f, 1f);
+            fadeTime_Prop.floatValue = EditorGUILayout.Slider("Fade Time", fadeTime_Prop.floatValue, 0.5f, 2f);
+            lerpValue_Prop.floatValue = EditorGUILayout.Slider("Lerp Value", lerpValue_Prop.floatValue, 0.1f, 1f);
             EditorGUI.indentLevel--;
 
             GUILayout.Space(5f);
@@ -160,9 +176,12 @@ namespace MattScripts {
             GUILayout.Space(3f);
 
             EditorGUI.indentLevel++;
-            myScript.activateArea = (BoxCollider)EditorGUILayout.ObjectField("Activate Area", myScript.activateArea, typeof(GameObject), true);
-            myScript.fadeOverlay = (Image)EditorGUILayout.ObjectField("Fade Overlay", myScript.fadeOverlay, typeof(GameObject), true);
+            activateArea_Prop.objectReferenceValue = EditorGUILayout.ObjectField("Activate Area", activateArea_Prop.objectReferenceValue, typeof(BoxCollider), true);
+            fadeOverlay_Prop.objectReferenceValue = EditorGUILayout.ObjectField("Fade Overlay", fadeOverlay_Prop.objectReferenceValue, typeof(Image), true);
             EditorGUI.indentLevel--;
+
+            // ALWAYS END THE CALL WITH THIS
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

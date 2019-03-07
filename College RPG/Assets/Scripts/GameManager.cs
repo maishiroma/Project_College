@@ -31,10 +31,6 @@ namespace MattScripts {
         private GameObject player;
         private CameraController mainCamera;
 
-        private bool justEnteredScene;
-        private float alpha;
-        private Image fadeOverlay;
-
         // Getters/Setters
         public GameStates CurrentState{
             get {return currentState;}
@@ -89,25 +85,11 @@ namespace MattScripts {
             SceneManager.sceneLoaded -= OnLevelFinishedLoading;
         }
 
-        // Fades in the scene when the player enters 
-		private void Update()
-		{
-            if(justEnteredScene == true && fadeOverlay != null)
-            {
-                alpha = Mathf.Lerp(alpha, 0, 0.1f);
-                Color newColor = new Color(fadeOverlay.color.r, fadeOverlay.color.g, fadeOverlay.color.b, alpha);
-                fadeOverlay.color = newColor;
-            }
-		}
-
 		// This function is called when the GameManager detects a new scene
 		private void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
             if(scene.buildIndex != 1)
             {
-                justEnteredScene = true;
-                alpha = 1;
-
                 StartCoroutine(SetUpScene());
             }
         }
@@ -115,8 +97,8 @@ namespace MattScripts {
         // Called in OnLevelFinishedLoading so that the game can load up certain things
         private IEnumerator SetUpScene()
         {
+            // We first find the position of the PlayerSpawn GameObject where we will put the player at
             Vector3 newPos = GameObject.FindWithTag("PlayerSpawn").transform.position;
-            fadeOverlay = GameObject.FindWithTag("FadeUI").GetComponent<Image>();
             yield return new WaitForEndOfFrame();
 
             // We first check if we have the player spawned in
@@ -139,9 +121,7 @@ namespace MattScripts {
             mainCamera.objectToFollow = player.transform;
             yield return new WaitForEndOfFrame();
 
-            // If needed, we restart the player controller and make the fade effect finish
-            justEnteredScene = false;
-            fadeOverlay.color = new Color(fadeOverlay.color.r, fadeOverlay.color.g, fadeOverlay.color.b, 0);
+            // We enable the player to move and the game resumes
             player.GetComponent<CharacterController>().EnableController();
             CurrentState = GameStates.NORMAL;
             yield return null;

@@ -14,6 +14,7 @@ namespace MattScripts {
     public class CameraController : MonoBehaviour {
 
         [Header("General Variables")]
+        [HideInInspector]
         public Transform objectToFollow;
         public LayerMask solidSurfaceLayer;
 

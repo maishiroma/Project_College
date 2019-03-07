@@ -1,11 +1,6 @@
-﻿/*	Using: https://www.youtube.com/watch?v=xJQXoG3caGc and https://www.youtube.com/watch?v=YMj2qPq9CP8
+﻿/*  Using: https://www.youtube.com/watch?v=xJQXoG3caGc and https://www.youtube.com/watch?v=YMj2qPq9CP8
  * 
- * 	Making a loading screen. Allows for some extra flexibility too. Combined aspects from both tutorials to make this.
- * 
- * 	Read these in order to prevent the game from freezing when the loading screen is complete:
- * 	https://gamedev.stackexchange.com/questions/130180/smooth-loading-screen-between-scenes
- *  https://forum.unity.com/threads/asynchronous-loading-freeze.191358/
- *  https://forum.unity.com/threads/scenemanager-loadsceneasync-and-getting-real-loading-times.403034/
+ *  Making a loading screen. Allows for some extra flexibility too. Combined aspects from both tutorials to make this
  */
 
 // LoadingScreenManager
@@ -20,116 +15,149 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using TMPro;
 
-public class LoadingScreenManager : MonoBehaviour {
+namespace MattScripts {
+    
+    public class LoadingScreenManager : MonoBehaviour
+    {
+        // The scene to load. 
+        public static int sceneToLoadIndex = -1;
 
-	// The scene to load. 
-	public static int sceneToLoadIndex = 1;
+        // IMPORTANT! This is the build index of your loading scene. You need to change this to match your actual scene index
+        static int loadingSceneIndex = 1;
 
-	// IMPORTANT! This is the build index of your loading scene. You need to change this to match your actual scene index
-	static int loadingSceneIndex = 1;
+        [Header("Loading Visuals")]
+        public Slider progressBar;              // The progress bar that SHOULD fill up when game is loading
+        public Image fadeOverlay;
 
-	[Header("Loading Visuals")]
-    public TextMeshProUGUI loadingText;				// Displays the now loading text
-	public Slider progressBar;				// The progress bar that SHOULD fill up when game is loading
-	public Image fadeOverlay;
+        [Header("Timing Settings")]
+        public float waitOnLoadEnd = 0.25f;
+        public float fadeDuration = 0.25f;
 
-	[Header("Timing Settings")]
-	public float fadeDuration = 0.25f;
-	public float waitOnLoadEnd = 0.25f;
+        [Header("Loading Settings")]
+        public LoadSceneMode loadSceneMode = LoadSceneMode.Single;
+        public ThreadPriority loadThreadPriority;
 
-	// Private variables
-	private AsyncOperation operation;
-	private Scene currentScene;
+        [Header("Other")]
+        public AudioListener audioListener;     // If loading additive, link to the cameras audio listener, to avoid multiple active audio listeners
 
-	// NEED TO CALL THIS METHOD IN ANOTHER SCRIPT TO USE THIS
-	public static void LoadScene(int levelNum) 
-	{				
-		if(levelNum < 0)
-		{
-			Debug.LogError("The scene index does not exist!");
-		}
-		else
-		{
-			Application.backgroundLoadingPriority = ThreadPriority.High;
-			sceneToLoadIndex = levelNum;
-			SceneManager.LoadScene(loadingSceneIndex);
-		}
-	}
+        // Private variables
+        private AsyncOperation operation;
 
-	void Start() 
-	{
-		if(sceneToLoadIndex == -1)
-		{
-			Debug.LogError("Are you running this scene just as is? You need to call LoadScene from another script to have this work!");
-		}
-		else
-		{
-			fadeOverlay.gameObject.SetActive(true); // Making sure it's on so that we can crossfade Alpha
-			StartCoroutine(LoadAsync(sceneToLoadIndex));
-		}
-	}
-		
-	IEnumerator LoadAsync(int levelNum) 
-	{
-        ShowLoadingVisuals();
-		yield return null; 
+        // NEED TO CALL THIS METHOD IN ANOTHER SCRIPT TO USE THIS
+        public static void LoadScene(int levelNum)
+        {
+            if(levelNum < 0)
+            {
+                Debug.LogError("The scene index does not exist!");
+            }
+            else
+            {
+                // Switches the game to the loading screen
+                Application.backgroundLoadingPriority = ThreadPriority.High;
+                sceneToLoadIndex = levelNum;
+                SceneManager.LoadScene(loadingSceneIndex);
+            }
+        }
 
-		// We fade into the loading screen and begin the async load
-		FadeIn();
-		yield return new WaitForSeconds(fadeDuration);
+        // Starts up the logic for loading up the next level
+        private void Start()
+        {
+            if(sceneToLoadIndex == -1)
+            {
+                Debug.LogError("Are you running this scene just as is? You need to call LoadScene from another script to have this work!");
+            }
+            else
+            {
+                fadeOverlay.gameObject.SetActive(true); // Making sure it's on so that we can crossfade Alpha
+                StartCoroutine(LoadAsync(sceneToLoadIndex));
+            }
+        }
 
-		StartOperation(levelNum);
-		yield return null; 
+        // The main logic in handling the loading visuals and changing to the next screen
+        private IEnumerator LoadAsync(int levelNum)
+        {
+            // We first enable the loading visuals
+            ShowLoadingVisuals();
+            yield return null;
 
-		// The second load does all of the Awake() and Start() calls. This takes a while depending on how many calls there
-		// are. Thus, we can't guess how long this will take.
-		// We make a percentage and simply incremente it slowely to 100
-		float perc = 0;
-        while(!operation.isDone && progressBar.value < 0.6f)
-		{
-			perc = Mathf.Lerp(perc, 1f, 0.001f);
-			progressBar.value = perc;
-			yield return null;
-		}
+            // We then fade the screen
+            fadeOverlay.CrossFadeAlpha(0, fadeDuration, true);
+            yield return new WaitForSeconds(fadeDuration);
 
-		ShowCompletionVisuals();
+            // We start up the loading operation
+            StartOperation(levelNum);
 
-		yield return new WaitForSeconds(waitOnLoadEnd);
+            // And then we loop through the logic in loading the level
+            float prevProgress = 0f;
+            while(DoneLoading() == false)
+            {
+                // This is done so that we can make our progress be scaled to 0-1
+                float progress = Mathf.Clamp01(operation.progress / 0.9f);
 
-		FadeOut();
+                // We check to see if we made any signifigant progress in loading. If not, we slowly increment our bar up.
+                // Else, we set the value to be the progress.
+                if(Mathf.Approximately(progress, prevProgress) == true)
+                {
+                    progressBar.value = progress;
+                    prevProgress = progress;
+                }
+                else
+                {
+                    progressBar.value += 0.01f;
+                }
+                yield return null;
+            }
 
-		yield return new WaitForSeconds(fadeDuration);
+            // If we made loading the next scene additive, we reenable the audio
+            if(loadSceneMode == LoadSceneMode.Additive)
+            {
+                audioListener.enabled = false;
+            }
 
-        operation.allowSceneActivation = true;
-	}
+            // We also show the completed visuals
+            ShowCompletionVisuals();
+            yield return new WaitForSeconds(waitOnLoadEnd);
 
-	void StartOperation(int levelNum)
-	{
-		operation = SceneManager.LoadSceneAsync(levelNum, LoadSceneMode.Single);
-		operation.allowSceneActivation = false;
-	}
+            // We fade out the visuals
+            fadeOverlay.CrossFadeAlpha(1, fadeDuration, true);
+            yield return new WaitForSeconds(fadeDuration);
 
-	void FadeIn() 
-	{
-		fadeOverlay.CrossFadeAlpha(0, fadeDuration, true);
-	}
+            // And then we finalize the load
+            if(loadSceneMode != LoadSceneMode.Additive)
+            {
+                operation.allowSceneActivation = true;
+            }
+        }
 
-	void FadeOut()
-	{
-		fadeOverlay.CrossFadeAlpha(1, fadeDuration, true);
-	}
+        // This method takes care of starting to load up the next level
+        private void StartOperation(int levelNum)
+        {
+            Application.backgroundLoadingPriority = loadThreadPriority;
+            operation = SceneManager.LoadSceneAsync(levelNum, loadSceneMode);
 
-	void ShowLoadingVisuals() 
-	{
-		progressBar.value = 0f;
-		loadingText.text = "Loading...";
-	}
+            if(loadSceneMode == LoadSceneMode.Single)
+            {
+                operation.allowSceneActivation = false;
+            }
+        }
 
-	void ShowCompletionVisuals()
-	{
-		progressBar.value = 100f;
-		loadingText.text = "Procceed!";
-	}
+        // A helper method that helps check if we are done loading the next scene
+        private bool DoneLoading()
+        {
+            return (loadSceneMode == LoadSceneMode.Additive && operation.isDone) || (loadSceneMode == LoadSceneMode.Single && operation.progress >= 0.9f);
+        }
+
+        // A helper method that sets up all of the loading visuals
+        private void ShowLoadingVisuals()
+        {
+            progressBar.value = 0f;
+        }
+
+        // A helper method that completes all of the loading visuals
+        private void ShowCompletionVisuals()
+        {
+            progressBar.value = 100f;
+        }
+    }
 }
