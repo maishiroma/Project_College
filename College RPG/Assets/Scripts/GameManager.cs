@@ -11,7 +11,8 @@ namespace MattScripts {
     // These determine what the game is currently doing, and each state will invoke different actions accordingly
     public enum GameStates {
         NORMAL,
-        EVENT
+        EVENT,
+        TRAVEL
     }
 
     public class GameManager : MonoBehaviour {
