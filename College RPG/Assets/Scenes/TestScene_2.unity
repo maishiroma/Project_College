@@ -122,15 +122,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 74.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -54.619995
+      value: -54
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -12
+      value: -4
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalRotation.x
@@ -155,12 +155,6 @@ Prefab:
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
   m_IsPrefabAsset: 0
---- !u!114 &24573235 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114677309508385556, guid: 516c380ddd95f411a80c98ef01ded07a,
-    type: 2}
-  m_PrefabInternal: {fileID: 24573234}
-  m_Script: {fileID: 11500000, guid: 3e879b610abfd48b49ffd399947ece80, type: 3}
 --- !u!1 &70805913
 GameObject:
   m_ObjectHideFlags: 0
@@ -816,6 +810,8 @@ Transform:
   - {fileID: 130491637}
   - {fileID: 1605971972}
   - {fileID: 1991144940}
+  - {fileID: 294047565}
+  - {fileID: 1737168673}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -915,8 +911,9 @@ GameObject:
   - component: {fileID: 294047568}
   - component: {fileID: 294047567}
   - component: {fileID: 294047566}
+  - component: {fileID: 294047569}
   m_Layer: 9
-  m_Name: WestCube
+  m_Name: WarpToScene
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -932,8 +929,8 @@ Transform:
   m_LocalPosition: {x: -21.41, y: 3.5900002, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1991144940}
-  m_RootOrder: 2
+  m_Father: {fileID: 232871935}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &294047566
 BoxCollider:
@@ -942,10 +939,10 @@ BoxCollider:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 294047564}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 5, y: 1, z: 10}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &294047567
 MeshRenderer:
@@ -989,6 +986,30 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 294047564}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &294047569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 294047564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8fb025c8bdd44c60aeaeb29b0df99c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toNewScene: 1
+  newSceneIndex: 2
+  fadeTime: 1
+  lerpValue: 0.1
+  cameraMinX: 70
+  cameraMaxX: 94
+  cameraMinY: -55
+  cameraMaxY: 50
+  cameraMinZ: -15
+  cameraMaxZ: 7
+  activateArea: {fileID: 1737168677}
+  travelSpot: {fileID: 899782939}
+  fadeOverlay: {fileID: 1341557522}
 --- !u!1 &325155053
 GameObject:
   m_ObjectHideFlags: 0
@@ -1348,6 +1369,78 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 365898885}
   m_CullTransparentMesh: 0
+--- !u!1 &494961988
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 494961991}
+  - component: {fileID: 494961990}
+  - component: {fileID: 494961989}
+  m_Layer: 0
+  m_Name: PlayerSpawn
+  m_TagString: PlayerSpawn
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!23 &494961989
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 494961988}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
+  m_Materials:
+  - {fileID: 2100000, guid: af0d9c76c9f74431d995c3f4ef91c186, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+--- !u!33 &494961990
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 494961988}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &494961991
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 494961988}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -57, z: 0}
+  m_LocalScale: {x: 0.24324, y: 0.24324, z: 0.24324}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &540865380
 GameObject:
   m_ObjectHideFlags: 0
@@ -1602,7 +1695,7 @@ GameObject:
   - component: {fileID: 647919089}
   - component: {fileID: 647919088}
   m_Layer: 0
-  m_Name: WestCube
+  m_Name: WarpToIsland
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1619,7 +1712,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1001745403}
-  m_Father: {fileID: 1540581719}
+  m_Father: {fileID: 1049933269}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &647919088
@@ -1634,7 +1727,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toNewScene: 0
-  showTriggerArea: 1
   newSceneIndex: 0
   fadeTime: 1
   lerpValue: 0.1
@@ -1645,7 +1737,6 @@ MonoBehaviour:
   cameraMinZ: -15
   cameraMaxZ: 7
   activateArea: {fileID: 647919089}
-  mainCamera: {fileID: 24573235}
   travelSpot: {fileID: 1001745403}
   fadeOverlay: {fileID: 1341557522}
 --- !u!65 &647919089
@@ -2350,6 +2441,7 @@ Transform:
   m_Children:
   - {fileID: 124579479}
   - {fileID: 1540581719}
+  - {fileID: 647919087}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
@@ -2725,7 +2817,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1540581719}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1324337746
 BoxCollider:
@@ -2879,7 +2971,7 @@ GameObject:
   - component: {fileID: 1341557522}
   m_Layer: 5
   m_Name: FadeOverlay
-  m_TagString: Untagged
+  m_TagString: FadeUI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2974,7 +3066,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1357116362}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
@@ -3106,48 +3198,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1370909178}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1379004863
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: -57
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_RootOrder
-      value: 5
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-  m_IsPrefabAsset: 0
 --- !u!1 &1425194098
 GameObject:
   m_ObjectHideFlags: 0
@@ -3430,7 +3480,6 @@ Transform:
   m_Children:
   - {fileID: 1237274388}
   - {fileID: 1445569016}
-  - {fileID: 647919087}
   - {fileID: 1324337745}
   m_Father: {fileID: 1049933269}
   m_RootOrder: 1
@@ -3892,7 +3941,7 @@ GameObject:
   - component: {fileID: 1737168677}
   - component: {fileID: 1737168674}
   m_Layer: 0
-  m_Name: EastCube
+  m_Name: WarpToIsland
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3909,8 +3958,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 899782939}
-  m_Father: {fileID: 1991144940}
-  m_RootOrder: 3
+  m_Father: {fileID: 232871935}
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1737168674
 MonoBehaviour:
@@ -3924,7 +3973,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toNewScene: 0
-  showTriggerArea: 1
   newSceneIndex: 0
   fadeTime: 1
   lerpValue: 0.1
@@ -3935,7 +3983,6 @@ MonoBehaviour:
   cameraMinZ: -15
   cameraMaxZ: 7
   activateArea: {fileID: 1737168677}
-  mainCamera: {fileID: 24573235}
   travelSpot: {fileID: 899782939}
   fadeOverlay: {fileID: 1341557522}
 --- !u!23 &1737168675
@@ -4569,8 +4616,6 @@ Transform:
   m_Children:
   - {fileID: 1357116363}
   - {fileID: 1463418997}
-  - {fileID: 294047565}
-  - {fileID: 1737168673}
   m_Father: {fileID: 232871935}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4688,6 +4733,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5142c2905fd6d4cc6a8948bbe2187589, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerPrefab: {fileID: 1795601637931720, guid: 2030c1eb627334886807220f4842aab3,
+    type: 2}
   currentState: 0
 --- !u!4 &2033251005
 Transform:

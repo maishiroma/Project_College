@@ -10,28 +10,18 @@ namespace MattScripts {
 
     public class PlayerGraphics : MonoBehaviour {
 
-        [Header("Component References")]
+        [Header("External References")]
         public SpriteRenderer playerSprite;
-
-        // Private Variables
-        private GameObject mainCamera;
-
-        // Gets the private variables initialized
-        private void Awake()
-        {
-            mainCamera = GameObject.FindWithTag("MainCamera");
-            if(mainCamera == null)
-            {
-                Debug.LogError("Cannot find Main Camera in Scene!");
-            }
-        }
 
         // Always has the sprite to look at the camera
         private void LateUpdate()
         {
-            Vector3 newPos = mainCamera.transform.position - transform.position;
-            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(newPos.x, 0, newPos.z));
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, 0.5f);
+            if(GameManager.Instance.MainCamera != null)
+            {
+                Vector3 newPos = GameManager.Instance.MainCamera.transform.position - transform.position;
+                Quaternion lookRotation = Quaternion.LookRotation(new Vector3(newPos.x, 0, newPos.z));
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, 0.5f);
+            }
         }
 
         // Changes the sprite to whatever action is passed into here.

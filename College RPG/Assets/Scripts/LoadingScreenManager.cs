@@ -83,25 +83,11 @@ public class LoadingScreenManager : MonoBehaviour {
 		StartOperation(levelNum);
 		yield return null; 
 
-		// By setting this true we tell Unity that it can go ahead and proceed
-		operation.allowSceneActivation = true;
-
-        // This loads into two sections. The first one is all of the models itself that are in the next level
-        while(operation.progress < 0.9f) 
-        {
-            // We artificially scale it so that it doesn't just jump to 90%
-            float progress = 0.5f * operation.progress / 0.9f;
-
-            progressBar.value = progress;
-            yield return null;
-        }
-        yield return null; 
-
 		// The second load does all of the Awake() and Start() calls. This takes a while depending on how many calls there
 		// are. Thus, we can't guess how long this will take.
 		// We make a percentage and simply incremente it slowely to 100
 		float perc = 0;
-		while(!operation.isDone)
+        while(!operation.isDone && progressBar.value < 0.6f)
 		{
 			perc = Mathf.Lerp(perc, 1f, 0.001f);
 			progressBar.value = perc;
@@ -115,6 +101,8 @@ public class LoadingScreenManager : MonoBehaviour {
 		FadeOut();
 
 		yield return new WaitForSeconds(fadeDuration);
+
+        operation.allowSceneActivation = true;
 	}
 
 	void StartOperation(int levelNum)

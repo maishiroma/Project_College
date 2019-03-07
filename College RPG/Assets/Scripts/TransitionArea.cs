@@ -12,15 +12,11 @@ namespace MattScripts {
     
     public class TransitionArea : MonoBehaviour {
 
-        [Header("General Variables")]
         public bool toNewScene;
         public int newSceneIndex;
-        [Range(1f,2f)]
         public float fadeTime = 1f;
-        [Range(0.01f, 1f)]
         public float lerpValue = 0.1f;
 
-        [Header("New Camera Modifiers")]
         public float cameraMinX;
         public float cameraMaxX;
         public float cameraMinY;
@@ -28,9 +24,7 @@ namespace MattScripts {
         public float cameraMinZ;
         public float cameraMaxZ;
 
-        [Header("Outside References")]
         public BoxCollider activateArea;
-        public CameraController mainCamera;
         public Transform travelSpot;
         public Image fadeOverlay;
 
@@ -39,7 +33,7 @@ namespace MattScripts {
         private bool isTraveling = false;
         private bool isFading = false;
 
-		// Handles the core logic of the door cutscene
+		// Handles the core logic of the transition cutscene
 		private void Update()
         {
             if(isTraveling == true)
@@ -60,7 +54,7 @@ namespace MattScripts {
             }
         }
 
-        // While the player is hovering over this and if they hit W, they will enter the door
+        // While the player entered the trigger zone, they will travel to another point
         private void OnTriggerEnter(Collider collision)
         {
             if(isTraveling == false && collision.CompareTag("Player"))
@@ -71,7 +65,7 @@ namespace MattScripts {
         }
 
         // This is used to time the transition
-        IEnumerator TravelCutscene(GameObject player)
+        private IEnumerator TravelCutscene(GameObject player)
         {
             // Getting the proper components
             CharacterController playerController = player.GetComponent<CharacterController>();
@@ -84,7 +78,7 @@ namespace MattScripts {
 
             if(toNewScene)
             {
-                // We load to the new scene
+                // We load to the new scene and exit
                 LoadingScreenManager.LoadScene(newSceneIndex);
                 yield return null;
             }
@@ -95,12 +89,12 @@ namespace MattScripts {
                 yield return new WaitForFixedUpdate();
 
                 // We set the camera to have new bounds so that it will properly show the player
-                mainCamera.minXPos = cameraMinX;
-                mainCamera.maxXPos = cameraMaxX;
-                mainCamera.minYPos = cameraMinY;
-                mainCamera.maxYPos = cameraMaxY;
-                mainCamera.minZPos = cameraMinZ;
-                mainCamera.maxZPos = cameraMaxZ;
+                GameManager.Instance.MainCamera.minXPos = cameraMinX;
+                GameManager.Instance.MainCamera.maxXPos = cameraMaxX;
+                GameManager.Instance.MainCamera.minYPos = cameraMinY;
+                GameManager.Instance.MainCamera.maxYPos = cameraMaxY;
+                GameManager.Instance.MainCamera.minZPos = cameraMinZ;
+                GameManager.Instance.MainCamera.maxZPos = cameraMaxZ;
                 yield return new WaitForFixedUpdate();
 
                 // We then tell the transition to fade back in
@@ -114,7 +108,7 @@ namespace MattScripts {
                 yield return null;
             }
         }
-	}
+    }
 
     // This is used to make a custom editor so that this class can be more flexible in displaying information
     [CustomEditor(typeof(TransitionArea))]
@@ -126,17 +120,31 @@ namespace MattScripts {
 
             // This toggles showing specific variables depending on the boolean passed
             GUILayout.Space(5f);
-            myScript.toNewScene = EditorGUILayout.Toggle("To New Scene", myScript.toNewScene);
+            myScript.toNewScene = EditorGUILayout.Toggle("Warp To New Scene?", myScript.toNewScene);
             EditorGUI.indentLevel++;
             if(myScript.toNewScene == true)
             {                
-                myScript.newSceneIndex = EditorGUILayout.IntField("Scene Index", myScript.newSceneIndex);
+                myScript.newSceneIndex = EditorGUILayout.IntField("New Scene Index", myScript.newSceneIndex);
+                EditorGUI.indentLevel--;
             }
             else
             {
                 myScript.travelSpot = (Transform)EditorGUILayout.ObjectField("Travel Spot", myScript.travelSpot, typeof(GameObject), true);
+
+                GUILayout.Space(5f);
+                EditorGUILayout.PrefixLabel("Camera Variables");
+                GUILayout.Space(3f);
+
+                EditorGUI.indentLevel++;
+                myScript.cameraMinX = EditorGUILayout.FloatField("Min X", myScript.cameraMinX);
+                myScript.cameraMaxX = EditorGUILayout.FloatField("Max X", myScript.cameraMaxX);
+                myScript.cameraMinY = EditorGUILayout.FloatField("Min Y", myScript.cameraMinY);
+                myScript.cameraMaxY = EditorGUILayout.FloatField("Max Y", myScript.cameraMaxY);
+                myScript.cameraMinZ = EditorGUILayout.FloatField("Min Z", myScript.cameraMinZ);
+                myScript.cameraMaxZ = EditorGUILayout.FloatField("Max Z", myScript.cameraMaxZ);
+                EditorGUI.indentLevel--;
+                EditorGUI.indentLevel--;
             }
-            EditorGUI.indentLevel--;
 
             GUILayout.Space(5f);
             EditorGUILayout.PrefixLabel("General Variables");
@@ -148,25 +156,11 @@ namespace MattScripts {
             EditorGUI.indentLevel--;
 
             GUILayout.Space(5f);
-            EditorGUILayout.PrefixLabel("New Camera Modifiers");
-            GUILayout.Space(3f);
-
-            EditorGUI.indentLevel++;
-            myScript.cameraMinX = EditorGUILayout.FloatField("Camera Min X", myScript.cameraMinX);
-            myScript.cameraMaxX = EditorGUILayout.FloatField("Camera Max X", myScript.cameraMaxX);
-            myScript.cameraMinY = EditorGUILayout.FloatField("Camera Min Y", myScript.cameraMinY);
-            myScript.cameraMaxY = EditorGUILayout.FloatField("Camera Max Y", myScript.cameraMaxY);
-            myScript.cameraMinZ = EditorGUILayout.FloatField("Camera Min Z", myScript.cameraMinZ);
-            myScript.cameraMaxZ = EditorGUILayout.FloatField("Camera Max Z", myScript.cameraMaxZ);
-            EditorGUI.indentLevel--;
-
-            GUILayout.Space(5f);
             EditorGUILayout.PrefixLabel("External References");
             GUILayout.Space(3f);
 
             EditorGUI.indentLevel++;
             myScript.activateArea = (BoxCollider)EditorGUILayout.ObjectField("Activate Area", myScript.activateArea, typeof(GameObject), true);
-            myScript.mainCamera = (CameraController)EditorGUILayout.ObjectField("Camera Controller", myScript.mainCamera, typeof(GameObject), true);
             myScript.fadeOverlay = (Image)EditorGUILayout.ObjectField("Fade Overlay", myScript.fadeOverlay, typeof(GameObject), true);
             EditorGUI.indentLevel--;
         }
