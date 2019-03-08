@@ -43,7 +43,19 @@ namespace MattScripts {
         // Reactivates the controller. Should be used instead of calling .enabled
         public void EnableController()
         {
+            forwardInput = 0;
+            turnInput = 0;
             enabled = true;
+        }
+
+        // We warp the player to the new position
+        // We only do this if this is disabled
+        public void WarpPlayer(Vector3 newPos)
+        {
+            if(isActiveAndEnabled == false)
+            {
+                playerRB.position = newPos;
+            }
         }
 
         // Returns true if the character is grounded (using a Raycast? Should be called as few times as possible)

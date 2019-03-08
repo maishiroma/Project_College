@@ -13,8 +13,12 @@ namespace MattScripts {
 
     public class CameraController : MonoBehaviour {
 
-        [Header("Positioning Variables")]
+        [Header("General Variables")]
+        [HideInInspector]
+        public Transform objectToFollow;
         public LayerMask solidSurfaceLayer;
+
+        [Header("Positioning Variables")]
         public Vector3 cameraOffset;
         public float minXPos;
         public float maxXPos;
@@ -22,27 +26,18 @@ namespace MattScripts {
         public float maxYPos;
         public float minZPos;
         public float maxZPos;
-
-        // Private variables
-        private Transform player;
-
-        // Upon Activation, we look for the player to follow, if no player is set
-        private void Awake()
-        {
-            if(player == null)
-            {
-                player = GameObject.FindWithTag("Player").transform;
-            }
-        }
-
+       
         // We update the position of the camera based on the player's movement
         private void LateUpdate()
         {
-            // We apply the initial position to be where the player is and add the offset from the player
-            Vector3 newPos = player.transform.position + cameraOffset;
+            if(objectToFollow != null)
+            {
+                // We apply the initial position to be where the player is and add the offset from the player
+                Vector3 newPos = objectToFollow.transform.position + cameraOffset;
 
-            // We then clamp the position to the min/max values we gathered
-            gameObject.transform.position = new Vector3(Mathf.Clamp(newPos.x, minXPos, maxXPos), Mathf.Clamp(newPos.y, minYPos, maxYPos), Mathf.Clamp(newPos.z, minZPos, maxZPos));
+                // We then clamp the position to the min/max values we gathered
+                gameObject.transform.position = new Vector3(Mathf.Clamp(newPos.x, minXPos, maxXPos), Mathf.Clamp(newPos.y, minYPos, maxYPos), Mathf.Clamp(newPos.z, minZPos, maxZPos));
+            }
         }
 
         // If the camera moves into a wall, we make the wall transparent
