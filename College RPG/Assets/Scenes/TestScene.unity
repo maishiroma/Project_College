@@ -435,7 +435,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toNewScene: 1
   newSceneIndex: 2
-  fadeTime: 1
+  fadeTime: 0.5
   lerpValue: 0.1
   cameraMinX: 70
   cameraMaxX: 94
@@ -814,7 +814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toNewScene: 0
   newSceneIndex: 2
-  fadeTime: 1
+  fadeTime: 0.5
   lerpValue: 0.1
   cameraMinX: -13
   cameraMaxX: 13
@@ -2406,7 +2406,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toNewScene: 0
   newSceneIndex: 2
-  fadeTime: 1
+  fadeTime: 0.5
   lerpValue: 0.1
   cameraMinX: 70
   cameraMaxX: 90
@@ -2728,6 +2728,11 @@ Prefab:
       propertyPath: fadeOverlay
       value: 
       objectReference: {fileID: 1341557522}
+    - target: {fileID: 114830373267671464, guid: 60b2354ef088c45dca1b97c0ee211290,
+        type: 2}
+      propertyPath: fadeTime
+      value: 0.5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 60b2354ef088c45dca1b97c0ee211290, type: 2}
   m_IsPrefabAsset: 0

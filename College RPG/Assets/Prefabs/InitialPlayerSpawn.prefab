@@ -329,7 +329,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toNewScene: 0
   newSceneIndex: 2
-  fadeTime: 1
+  fadeTime: 0.5
   lerpValue: 0.1
   cameraMinX: -13
   cameraMaxX: 13

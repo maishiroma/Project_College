@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEngine.SceneManagement;
 
 namespace MattScripts {
     
@@ -74,10 +72,10 @@ namespace MattScripts {
 
                 // We then tell the transition to fade back in
                 fadeOverlay.CrossFadeAlpha(0, fadeTime, true);
+                playerController.EnableController();
                 yield return new WaitForSeconds(fadeTime);
 
                 // We tell this invoke we are done!
-                playerController.EnableController();
                 GameManager.Instance.CurrentState = GameStates.NORMAL;
                 yield return null;
             }

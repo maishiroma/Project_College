@@ -43,6 +43,8 @@ namespace MattScripts {
         // Reactivates the controller. Should be used instead of calling .enabled
         public void EnableController()
         {
+            forwardInput = 0;
+            turnInput = 0;
             enabled = true;
         }
 
