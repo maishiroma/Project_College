@@ -26,7 +26,17 @@ namespace MattScripts {
         public float maxYPos;
         public float minZPos;
         public float maxZPos;
-       
+
+        // Private variables
+        private Quaternion origRotation;
+        private Vector3 origPosition;
+
+        // We initially set up the private variables
+        private void Start()
+        {
+            SaveTransform();
+        }
+
         // We update the position of the camera based on the player's movement
         private void LateUpdate()
         {
@@ -71,7 +81,25 @@ namespace MattScripts {
                 StandardShaderUtils.ChangeRenderMode(mr.material, StandardShaderUtils.BlendMode.Opaque);
             }
 		}
+    
+        // We save the position and rotation of the camera
+        public void SaveTransform()
+        {
+            if(gameObject != null)
+            {
+                origPosition = gameObject.transform.position;
+                origRotation = gameObject.transform.rotation;
+            }
+        }
+
+        // We revert to the saved position and rotation on the camera
+        public void RevertToOrigTransform()
+        {
+            if(gameObject != null)
+            {
+                gameObject.transform.position = origPosition;
+                gameObject.transform.rotation = origRotation;
+            }
+        }
     }
 }
-
-
