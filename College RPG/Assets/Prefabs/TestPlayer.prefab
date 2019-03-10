@@ -184,15 +184,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d43fff60d79b144008078b65aa826e3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forwardVelocity: 10
-  rotateVelocity: 150
+  moveSpeed: 10
   groundedDisitance: 1
   gravityAcceleration: 0.5
   solidWallLayer:
     serializedVersion: 2
     m_Bits: 512
-  FORWARD_AXIS: Vertical
-  TURN_AXIS: Horizontal
+  UPDOWN_AXIS: Vertical
+  LEFTRIGHT_AXIS: Horizontal
+  frontOfPlayer: {fileID: 1991670993564374}
   playerRB: {fileID: 54045901853797330}
 --- !u!136 &136287662766073522
 CapsuleCollider:

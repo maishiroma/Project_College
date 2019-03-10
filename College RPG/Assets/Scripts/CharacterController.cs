@@ -11,40 +11,42 @@ namespace MattScripts {
     public class CharacterController : MonoBehaviour {
 
         [Header("General Variables")]
-        public float forwardVelocity;               // How fast does the player move?
-        public float rotateVelocity;                // How fast does the player rotate?
+        public float moveSpeed;                     // How fast does the player move?
         [Range(0.01f, 5f)]
-        public float groundedDisitance;           // The disitance the character needs to be in in order to be considered grounded
+        public float groundedDisitance;             // The disitance the character needs to be in in order to be considered grounded
         [Range(0.1f, 1f)]
-        public float gravityAcceleration;          // How fast will we move downward when we are not grounded
-
+        public float gravityAcceleration;           // How fast will we move downward when we are not grounded
         public LayerMask solidWallLayer;            // The Layer used to mark solid walls
 
         [Header("Input Variables")]
-        public string FORWARD_AXIS;                 // These next three indicate the buttons used to control the character
-        public string TURN_AXIS;
+        public string UPDOWN_AXIS;                  // These next two indicate the buttons used to control the character
+        public string LEFTRIGHT_AXIS;
+
+        [Header("External Variables")]
+        public GameObject frontOfPlayer;
 
         // Private variables
-        [Space]
         [SerializeField]
         private Rigidbody playerRB;
-        private Quaternion targetRotation;
         private Vector3 targetVelocity;
-        private float forwardInput;
-        private float turnInput;
+        private float verticalInput;
+        private float horizontalInput;
+        private bool isGrounded;
 
         // Turns off the controller. Should be used instead of calling .enabled, since this turns off multiple aspects to the controller
         public void DisableController()
         {
             playerRB.velocity = Vector3.zero;
+            playerRB.isKinematic = true;
             enabled = false;
         }
 
         // Reactivates the controller. Should be used instead of calling .enabled
         public void EnableController()
         {
-            forwardInput = 0;
-            turnInput = 0;
+            verticalInput = 0;
+            horizontalInput = 0;
+            playerRB.isKinematic = false;
             enabled = true;
         }
 
@@ -58,22 +60,13 @@ namespace MattScripts {
             }
         }
 
-        // Returns true if the character is grounded (using a Raycast? Should be called as few times as possible)
-        public bool GetGrounded()
-        {
-            if(Physics.Raycast(gameObject.transform.position, Vector3.down, groundedDisitance, solidWallLayer))
-            {
-                return true;
-            }
-            return false;
-        }
-
         // Initializes default values for the private variables
         private void Start()
         {
-            forwardInput = 0;
+            horizontalInput = 0;
+            verticalInput = 0;
             targetVelocity = Vector3.zero;
-            targetRotation = gameObject.transform.rotation;
+
             if(gameObject.GetComponent<Rigidbody>() == null)
             {
                 Debug.LogError("You forgot to add a Rigidbody to the character!");
@@ -84,58 +77,40 @@ namespace MattScripts {
         private void Update()
         {
             GetInput();
-            Turn();
         }
 
         // Used for physics updates
         private void FixedUpdate()
         {
-            Run();
+            CheckIfGrounded();
+            MovePlayer();
             VerticalMovement();
+
+            // This reorientates the gameobject that is representing the front of the player
+            if(targetVelocity.normalized.magnitude > 0.5f && isGrounded == true)
+            {
+                frontOfPlayer.transform.localPosition = targetVelocity.normalized / 2f;
+            }
             playerRB.velocity = gameObject.transform.TransformDirection(targetVelocity);
         }
 
         // Gets the player Input and used in the Update
         private void GetInput()
         {
-            forwardInput = Input.GetAxis(FORWARD_AXIS);
-            turnInput = Input.GetAxis(TURN_AXIS);
+            verticalInput = Input.GetAxis(UPDOWN_AXIS);
+            horizontalInput = Input.GetAxis(LEFTRIGHT_AXIS);
         }
 
-        // Moves the player
-        private void Run()
+        // Moves the player around the world
+        private void MovePlayer()
         {
-            if(forwardInput < 0)
-            {
-                // If the player is moving backwards, they can move
-                targetVelocity.z = forwardVelocity * forwardInput;
-            }
-            else if(forwardInput > 0 && Physics.Raycast(gameObject.transform.position, gameObject.transform.forward, 0.5f, solidWallLayer) == false)
-            {
-                // If the player is moving forward AND there is no wall in front of them, they can move
-                targetVelocity.z = forwardVelocity * forwardInput;
-            }
-            else
-            {
-                // The player stops moving
-                targetVelocity.z = 0;
-            }
-        }
-
-        // Turns the player
-        private void Turn()
-        {
-            // We reorientate the player acccording to how they turn.
-            // In order to add the new rotation to the current rotation, we need to use multiplication
-            // We also do the turn effect in here
-            targetRotation *= Quaternion.AngleAxis(rotateVelocity * turnInput * Time.deltaTime, Vector3.up);
-            gameObject.transform.rotation = targetRotation;
+            targetVelocity.z = moveSpeed * verticalInput;
+            targetVelocity.x = moveSpeed * horizontalInput;
         }
     
         // Moves the player upward, downward, or staying on the ground.
         private void VerticalMovement()
         {
-            bool isGrounded = GetGrounded();
             if(isGrounded == true)
             {
                 // The player is grounded
@@ -150,6 +125,19 @@ namespace MattScripts {
             {
                 // default case
                 targetVelocity.y = 0;
+            }
+        }
+    
+        // Checks if the player is grounded and updated isGrounded
+        private void CheckIfGrounded()
+        {
+            if(Physics.Raycast(gameObject.transform.position, Vector3.down, groundedDisitance, solidWallLayer))
+            {
+                isGrounded = true;
+            }
+            else
+            {
+                isGrounded = false;
             }
         }
     }
