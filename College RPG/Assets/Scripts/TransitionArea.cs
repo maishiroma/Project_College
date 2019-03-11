@@ -12,6 +12,7 @@ namespace MattScripts {
     
     public class TransitionArea : MonoBehaviour {
 
+        public bool showTriggerArea;
         public bool toNewScene;
         public int newSceneIndex;
         public float fadeTime = 1f;
@@ -35,6 +36,16 @@ namespace MattScripts {
             {
                 GameManager.Instance.CurrentState = GameStates.TRAVEL;
                 StartCoroutine("TravelCutscene", collision.gameObject);
+            }
+        }
+
+        // When selected and when enabled, allows for the hitbox to be visualized
+        private void OnDrawGizmos()
+        {
+            if(showTriggerArea == true)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireCube(activateArea.gameObject.transform.position, activateArea.size);
             }
         }
 
@@ -88,6 +99,7 @@ namespace MattScripts {
     [CanEditMultipleObjects]
     public class TransitionAreaEditor : Editor {
 
+        SerializedProperty showTriggerArea_Prop;
         SerializedProperty toNewScene_Prop;
         SerializedProperty newSceneIndex_Prop;
         SerializedProperty fadeTime_Prop;
@@ -107,6 +119,7 @@ namespace MattScripts {
         // Sets up all of the serialized properties
 		private void OnEnable()
 		{
+            showTriggerArea_Prop = serializedObject.FindProperty("showTriggerArea");
             toNewScene_Prop = serializedObject.FindProperty("toNewScene");
             newSceneIndex_Prop = serializedObject.FindProperty("newSceneIndex");
             fadeTime_Prop = serializedObject.FindProperty("fadeTime");
@@ -165,6 +178,7 @@ namespace MattScripts {
             GUILayout.Space(3f);
 
             EditorGUI.indentLevel++;
+            showTriggerArea_Prop.boolValue = EditorGUILayout.Toggle("Show Trigger?", showTriggerArea_Prop.boolValue);
             fadeTime_Prop.floatValue = EditorGUILayout.Slider("Fade Time", fadeTime_Prop.floatValue, 0.5f, 2f);
             lerpValue_Prop.floatValue = EditorGUILayout.Slider("Lerp Value", lerpValue_Prop.floatValue, 0.1f, 1f);
             EditorGUI.indentLevel--;
