@@ -21,6 +21,8 @@ namespace MattScripts {
         [SerializeField]
         [TextArea(1, 4)]
         private string dialogueText = "";
+        [SerializeField]
+        private int delayTime = 0;
 
         [Header("External References")]
         [SerializeField]
@@ -53,42 +55,49 @@ namespace MattScripts {
             get {return nodeId;}
         }
 
+        public int GetDelayTime{
+            get { return delayTime;}
+        }
+
         public BaseEvent DialogueEvent {
             get {return endEvent;}
         }
 
         // Constructor that createa a Node with no children
-        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, BaseEvent endEvent = null)
+        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int delayTime, BaseEvent endEvent = null)
         {
             this.portrait = portrait;
             this.nameText = nameText;
             this.choiceText = choiceText;
             this.dialogueText = dialogueText;
             this.nodeId = nodeId;
+            this.delayTime = delayTime;
             this.endEvent = endEvent;
         }
 
         // Constructor that create a Node with one child node
-        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int childNodeId, BaseEvent endEvent = null)
+        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int childNodeId, int delayTime, BaseEvent endEvent = null)
         {
             this.portrait = portrait;
             this.nameText = nameText;
             this.choiceText = choiceText;
             this.dialogueText = dialogueText;
             this.nodeId = nodeId;
+            this.delayTime = delayTime;
             this.endEvent = endEvent;
 
             this.childrenNodeIds = new int[1] {childNodeId};
         }
 
         // Constructor that create a Node that has multiple child nodes
-        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int[] childrenNodeIds, BaseEvent endEvent = null)
+        public DialogueNode(Sprite portrait, string nameText, string choiceText, string dialogueText, int nodeId, int[] childrenNodeIds, int delayTime, BaseEvent endEvent = null)
         {
             this.portrait = portrait;
             this.nameText = nameText;
             this.choiceText = choiceText;
             this.dialogueText = dialogueText;
             this.nodeId = nodeId;
+            this.delayTime = delayTime;
             this.endEvent = endEvent;
 
             this.childrenNodeIds = childrenNodeIds;

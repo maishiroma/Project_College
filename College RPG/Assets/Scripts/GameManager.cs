@@ -97,11 +97,11 @@ namespace MattScripts {
         // Called in OnLevelFinishedLoading so that the game can load up certain things
         private IEnumerator SetUpScene(int sceneIndex)
         {
-            // We first find the PlayerSpawn GameObject where we will put the player at
+            // We first find the PlayerSpawn GameObject where we will put the player at and the main camera
             Vector3 playerSpawn = GameObject.FindWithTag("PlayerSpawn").transform.position;
-            yield return new WaitForEndOfFrame();
+            mainCamera = GameObject.FindWithTag("MainCamera").GetComponent<CameraController>();
 
-            // We first check if we have the player spawned in
+            // We then check if we have the player spawned in
             if(player == null)
             {
                 // If we can't find the player, we spawn the player in the level
@@ -114,10 +114,6 @@ namespace MattScripts {
                 player = GameObject.FindWithTag("Player");
                 player.GetComponent<CharacterController>().WarpPlayer(playerSpawn);
             }
-            yield return new WaitForEndOfFrame();
-
-            // We then reassign any crucial components that are related to the player or main camera
-            mainCamera = GameObject.FindWithTag("MainCamera").GetComponent<CameraController>();
             yield return new WaitForEndOfFrame();
 
             // We check to see what scene we are in. If we are in a cutscene, we do an additional step with the player
@@ -133,7 +129,6 @@ namespace MattScripts {
                 // We enable the player to move and the game resumes
                 player.GetComponent<CharacterController>().EnableController();
                 CurrentState = GameStates.NORMAL;
-                yield return null;
             }
             else
             {

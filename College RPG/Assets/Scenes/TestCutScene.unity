@@ -130,23 +130,23 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -19.11
+      value: -17.359999
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalRotation.x
-      value: 0.17364816
+      value: 0.16649732
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.27970025
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: 0.049318828
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_LocalRotation.w
-      value: 0.9848078
+      value: 0.9442532
       objectReference: {fileID: 0}
     - target: {fileID: 4865966261012484, guid: 516c380ddd95f411a80c98ef01ded07a, type: 2}
       propertyPath: m_RootOrder
@@ -256,29 +256,6 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 70805913}
   m_CullTransparentMesh: 0
---- !u!1 &85098034 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1795601637931720, guid: 2030c1eb627334886807220f4842aab3,
-    type: 2}
-  m_PrefabInternal: {fileID: 1404150934}
---- !u!95 &85098038
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 85098034}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &97643453
 GameObject:
   m_ObjectHideFlags: 0
@@ -349,6 +326,148 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 97643453}
   m_CullTransparentMesh: 0
+--- !u!1 &123965605
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 123965606}
+  - component: {fileID: 123965609}
+  - component: {fileID: 123965608}
+  - component: {fileID: 123965607}
+  m_Layer: 0
+  m_Name: CutSceneTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &123965606
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 123965605}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -19.09, y: -57.51, z: -20.74}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1487166757}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &123965607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 123965605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85517ade54f924a719b647f5fc166a5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activateByInteract: 0
+  showTriggerArea: 1
+  interactKey: 101
+  activateArea: {fileID: 123965609}
+  interactIconUI: {fileID: 924270935}
+  objectToInteract: {fileID: 1558988429}
+  typeWriteDelay: 0.01
+  endDialogueEvent: {fileID: 0}
+  associatedCutscene: {fileID: 123965608}
+  listOfDialogue:
+  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
+    nameText: 
+    choiceText: 
+    dialogueText: You sense an odd presence
+    delayTime: 2
+    endEvent: {fileID: 0}
+    nodeId: 0
+    childrenNodeIds: 01000000
+  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
+    nameText: 
+    choiceText: 
+    dialogueText: You notice someone walking towards you
+    delayTime: 3
+    endEvent: {fileID: 0}
+    nodeId: 1
+    childrenNodeIds: 02000000
+  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
+    nameText: Dummy
+    choiceText: 
+    dialogueText: HeyHeyHey what's up my dude
+    delayTime: 0
+    endEvent: {fileID: 0}
+    nodeId: 2
+    childrenNodeIds: 03000000
+  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
+    nameText: Dummy
+    choiceText: 
+    dialogueText: What brings you here?
+    delayTime: 2
+    endEvent: {fileID: 0}
+    nodeId: 3
+    childrenNodeIds: 0400000005000000
+  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
+    nameText: Dummy
+    choiceText: I left my keys here
+    dialogueText: Wow, talk about weird! I did too!
+    delayTime: 0
+    endEvent: {fileID: 0}
+    nodeId: 4
+    childrenNodeIds: 06000000
+  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
+    nameText: Dummy
+    choiceText: I don't know
+    dialogueText: Funny, because I ain't got a clue either!
+    delayTime: 0
+    endEvent: {fileID: 0}
+    nodeId: 5
+    childrenNodeIds: 06000000
+  - portrait: {fileID: 0}
+    nameText: 
+    choiceText: 
+    dialogueText: You left him be...
+    delayTime: 5
+    endEvent: {fileID: 0}
+    nodeId: 6
+    childrenNodeIds: 
+  playerChoiceUI: {fileID: 2107786890}
+  selectChoiceHighlight: {fileID: 11400000, guid: 1cc3a810285fe4693978f2e55394b4cf,
+    type: 2}
+--- !u!114 &123965608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 123965605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 623ef0e6669484ff3856554ab97c8186, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activateByInteract: 0
+  showTriggerArea: 1
+  interactKey: 101
+  activateArea: {fileID: 123965609}
+  interactIconUI: {fileID: 924270935}
+  objectToInteract: {fileID: 395700238}
+  canReplayEvent: 0
+  canResetCamera: 1
+--- !u!65 &123965609
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 123965605}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 3, y: 1, z: 3}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &217574995
 GameObject:
   m_ObjectHideFlags: 0
@@ -683,14 +802,13 @@ GameObject:
   - component: {fileID: 388046105}
   - component: {fileID: 388046104}
   - component: {fileID: 388046103}
-  - component: {fileID: 388046106}
   m_Layer: 0
   m_Name: ReturnToMainScene
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &388046103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -735,29 +853,12 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 388046102}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -29.12, y: -55.82, z: -30.82}
+  m_LocalPosition: {x: -13.85, y: -56.95, z: -22.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1487166757}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &388046106
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 388046102}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ac019ad9f4f64c1abc6da8f258fb48e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  activateByInteract: 0
-  showTriggerArea: 1
-  interactKey: 0
-  activateArea: {fileID: 388046104}
-  interactIconUI: {fileID: 924270935}
-  objectToInteract: {fileID: 388046102}
 --- !u!1 &395700238
 GameObject:
   m_ObjectHideFlags: 0
@@ -795,15 +896,19 @@ PlayableDirector:
   - key: {fileID: 0}
     value: {fileID: 0}
   - key: {fileID: 114563122803595376, guid: 5d9bff06d719d4b149c1257ef2ef795a, type: 2}
-    value: {fileID: 85098038}
+    value: {fileID: 0}
   - key: {fileID: 114413319062261996, guid: 5d9bff06d719d4b149c1257ef2ef795a, type: 2}
     value: {fileID: 1345422093}
   - key: {fileID: 0}
-    value: {fileID: 1587298283}
+    value: {fileID: 0}
   - key: {fileID: 0}
     value: {fileID: 388046102}
+  - key: {fileID: 0}
+    value: {fileID: 1789334914}
   m_ExposedReferences:
-    m_References: []
+    m_References:
+    - 51a69b41c14e64459a499d6bc40f7a8e: {fileID: 1789334914}
+    - 3c8c3de31004d4f10979e9b9fdef5c4b: {fileID: 1789334914}
 --- !u!4 &395700240
 Transform:
   m_ObjectHideFlags: 0
@@ -815,7 +920,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &618797972
 GameObject:
@@ -1749,57 +1854,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1357116362}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1404150934
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: -17
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: -57
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: -15
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4653010589001996, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_RootOrder
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 1795601637931720, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_Name
-      value: TestPlayer(Cutscene)
-      objectReference: {fileID: 0}
-    - target: {fileID: 1795601637931720, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-      propertyPath: m_TagString
-      value: Untagged
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 114959967737842440, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-  m_SourcePrefab: {fileID: 100100000, guid: 2030c1eb627334886807220f4842aab3, type: 2}
-  m_IsPrefabAsset: 0
 --- !u!1 &1433729870
 GameObject:
   m_ObjectHideFlags: 0
@@ -1870,7 +1924,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1433729870}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -28.8, y: -50.83, z: -30.3}
+  m_LocalPosition: {x: -18.970001, y: -57.44, z: -21.08}
   m_LocalScale: {x: 0.25543, y: 0.25543, z: 0.25543}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1986,7 +2040,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 1587298286}
+  - {fileID: 123965606}
   - {fileID: 388046105}
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -2144,113 +2198,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!1 &1587298283
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1587298286}
-  - component: {fileID: 1587298285}
-  - component: {fileID: 1587298287}
-  m_Layer: 0
-  m_Name: DialogueTrigger
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!65 &1587298285
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1587298283}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 3, y: 1, z: 3}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!4 &1587298286
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1587298283}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -28.919998, y: -50.9, z: -29.96}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1487166757}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1587298287
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1587298283}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85517ade54f924a719b647f5fc166a5e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  activateByInteract: 0
-  showTriggerArea: 1
-  interactKey: 101
-  activateArea: {fileID: 1587298285}
-  interactIconUI: {fileID: 924270935}
-  objectToInteract: {fileID: 1558988429}
-  typeWriteDelay: 0.01
-  listOfDialogue:
-  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
-    nameText: 
-    choiceText: 
-    dialogueText: You sense an odd presence
-    endEvent: {fileID: 0}
-    nodeId: 0
-    childrenNodeIds: 01000000
-  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
-    nameText: 
-    choiceText: 
-    dialogueText: You notice someone walking towards you
-    endEvent: {fileID: 0}
-    nodeId: 1
-    childrenNodeIds: 02000000
-  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
-    nameText: Dummy
-    choiceText: 
-    dialogueText: HeyHeyHey what's up my dude
-    endEvent: {fileID: 0}
-    nodeId: 2
-    childrenNodeIds: 03000000
-  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
-    nameText: Dummy
-    choiceText: 
-    dialogueText: What brings you here?
-    endEvent: {fileID: 0}
-    nodeId: 3
-    childrenNodeIds: 0400000005000000
-  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
-    nameText: Dummy
-    choiceText: I left my keys here
-    dialogueText: Wow, talk about weird! I did too!
-    endEvent: {fileID: 0}
-    nodeId: 4
-    childrenNodeIds: 
-  - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
-    nameText: Dummy
-    choiceText: I don't know
-    dialogueText: Funny, because I ain't got a clue either!
-    endEvent: {fileID: 0}
-    nodeId: 5
-    childrenNodeIds: 
-  endDialogueEvent: {fileID: 388046106}
-  playerChoiceUI: {fileID: 2107786890}
-  selectChoiceHighlight: {fileID: 11400000, guid: 1cc3a810285fe4693978f2e55394b4cf,
-    type: 2}
 --- !u!1 &1761301933
 GameObject:
   m_ObjectHideFlags: 0
@@ -3196,9 +3143,9 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2142581508}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.48, y: -56.6, z: 8.18}
+  m_LocalPosition: {x: 0.62205684, y: -56.6, z: 8.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

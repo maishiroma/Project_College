@@ -15,8 +15,9 @@ namespace MattScripts {
         [Header("Sub Variables")]
         [Range(0.01f,0.2f)]
         public float typeWriteDelay;                    // Amount of time it takes to display text to the player
-        public DialogueNode[] listOfDialogue;           // Array of all of the DialogueNodes that correspond to this event
         public BaseEvent endDialogueEvent;              // Does this Dialogue have an end event?
+        public CutSceneEvent associatedCutscene;        // Reference to the cutscene it is associated with one
+        public DialogueNode[] listOfDialogue;           // Array of all of the DialogueNodes that correspond to this event
 
         [Header("Sub UI Variables")]
         public GameObject playerChoiceUI;               // Reference to the Player Choice UI that contains the UI for player decisions
@@ -37,6 +38,7 @@ namespace MattScripts {
         private int currChoiceIndex;                    // The index number that is used to identify what choice the player selected
         private int numbOfAvailableChoices;             // Keeps track of the number of choices the player can select from
 
+        private bool isDialoguePaused;                  // Is the dialogue paused?
         private bool hasShownDialogueText;              // Has this dialogue finished showing all of its text and events?
         private bool hasShownChoices;                   // Has this dialogue shown all of its choices, if necessary
         private bool hasFinishedEvents;                 // Has this dialogue finished all of its events, if applicable?
@@ -81,7 +83,8 @@ namespace MattScripts {
                     }
                 }
 
-                if(Input.GetKeyDown(interactKey))
+                // As long as the dialogue window is shown, we can interact with it.
+                if(Input.GetKeyDown(interactKey) && isDialoguePaused == false)
                 {
                     if(hasShownChoices == true)
                     {
@@ -97,10 +100,19 @@ namespace MattScripts {
                         }
                         else if(listOfDialogue[currentDialogueId].CheckIfChildrenExist() == true)
                         {
-                            // We proceed to the next dialogue point
                             currentDialogueId = listOfDialogue[currentDialogueId].GetChildIdAtIndex(0);
-                            StartCoroutine(AnimateText());
-                            StartCoroutine(StartDialogueNodeEvent());
+
+                            if(associatedCutscene != null && listOfDialogue[currentDialogueId].GetDelayTime != 0)
+                            {
+                                // If there's a dely in the dialogue, we do that first
+                                StartCoroutine(DelayDialogue());
+                            }
+                            else
+                            {
+                                // Else, we proceed to the next dialogue point
+                                StartCoroutine(AnimateText());
+                                StartCoroutine(StartDialogueNodeEvent());
+                            }
                         }
                         else if(endDialogueEvent != null)
                         {
@@ -128,9 +140,16 @@ namespace MattScripts {
             portaitUI.sprite = null;
             currentDialogueId = 0;
 
-            dialogueWindowAnimator.SetBool("isOpen", true);
-            StartCoroutine(AnimateText());
-            StartCoroutine(StartDialogueNodeEvent());
+            if(associatedCutscene != null && listOfDialogue[currentDialogueId].GetDelayTime != 0)
+            {
+                StartCoroutine(DelayDialogue());
+            }
+            else
+            {
+                ShowDialogueBox();
+                StartCoroutine(AnimateText());
+                StartCoroutine(StartDialogueNodeEvent());
+            }
 		}
 
         // When the dialogue is finished, we reset it
@@ -149,10 +168,11 @@ namespace MattScripts {
             {
                 dialogueWindowAnimator.SetBool("isOpen", false);
             }
-            if(choiceWindowAnimator.GetBool("isOpen") == true)
+            if(choiceWindowAnimator.GetBool("isOpen") == true && hasShownChoices == true)
             {
                 choiceWindowAnimator.SetBool("isOpen", false);
             }
+            isDialoguePaused = true;
         }
 
         // When called, will show the dialogue box without restarting the conversation
@@ -162,10 +182,11 @@ namespace MattScripts {
             {
                 dialogueWindowAnimator.SetBool("isOpen", true);
             }
-            if(choiceWindowAnimator.GetBool("isOpen") == false)
+            if(choiceWindowAnimator.GetBool("isOpen") == false && hasShownChoices == true)
             {
                 choiceWindowAnimator.SetBool("isOpen", true);
             }
+            isDialoguePaused = false;
         }
 
         // If we have choices, we fill them out with whatever dialogue node we are on.
@@ -298,6 +319,23 @@ namespace MattScripts {
 
             EventOutcome();
             yield return null;
+        }
+    
+        // Delays the current dialogue from showing immediatly
+        private IEnumerator DelayDialogue()
+        {
+            // When the dialogue is delayed, we resume our cutscene
+            HideDialogueBox();
+            associatedCutscene.ChangeCutsceneState("Resume");
+            yield return new WaitForSeconds(listOfDialogue[currentDialogueId].GetDelayTime);
+
+            // When the time is up, we pause the cutscene
+            associatedCutscene.ChangeCutsceneState("Pause");
+            yield return null;
+
+            StartCoroutine(AnimateText());
+            StartCoroutine(StartDialogueNodeEvent());
+            ShowDialogueBox();
         }
     }
 }

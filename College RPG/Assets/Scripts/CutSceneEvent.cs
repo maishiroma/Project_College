@@ -12,6 +12,7 @@ namespace MattScripts {
     {
         [Header("Sub Variables")]
         public bool canReplayEvent = false;
+        public bool canResetCamera = true;
 
         // Private Variables
         private PlayableDirector cutsceneObject;
@@ -32,13 +33,23 @@ namespace MattScripts {
             cutsceneObject = objectToInteract.GetComponent<PlayableDirector>();
 		}
 
-		// Stops the camera from following the player
+		// Stops the camera from following the player and sets up any useful methods needed
 		public override void EventSetup()
 		{
             if(activateByInteract)
             {
                 interactIconUI.SetActive(false);
             }
+
+            // Dynamically sets the player to be used in the animation if there exists a track named "Player"
+            foreach(PlayableBinding curr in cutsceneObject.playableAsset.outputs){
+                if(curr.sourceObject.name == "Player")
+                {
+                    cutsceneObject.SetGenericBinding(curr.sourceObject, GameManager.Instance.PlayerReference.GetComponent<Animator>());
+                    break;
+                }
+            }
+
             GameManager.Instance.MainCamera.SaveTransform();
             GameManager.Instance.MainCamera.objectToFollow = null;
             GameManager.Instance.CurrentState = GameStates.EVENT;
@@ -47,7 +58,6 @@ namespace MattScripts {
 		// Resets the main camera to follow the player again.
 		public override void EventOutcome()
         {
-            GameManager.Instance.MainCamera.objectToFollow = GameManager.Instance.PlayerReference.transform;
             if(canReplayEvent == true)
             {
                 ResetEvent();
@@ -59,10 +69,44 @@ namespace MattScripts {
             GameManager.Instance.CurrentState = GameStates.NORMAL;
         }
 
+        // Changes the state of the cutscene if it can
+        // Can etiehr accept: Resume, Pause, Stop
+        public void ChangeCutsceneState(string state)
+        {
+            switch(state)
+            {
+                case "Resume":
+                    if(cutsceneObject.state == PlayState.Paused)
+                    {
+                        cutsceneObject.Resume();
+                    }
+                    break;
+                case "Pause":
+                    if(cutsceneObject.state == PlayState.Playing)
+                    {
+                        cutsceneObject.Pause();
+                    }
+                    break;
+                case "Stop":
+                    if(cutsceneObject.state == PlayState.Playing)
+                    {
+                        cutsceneObject.Stop();
+                    }
+                    break;
+                default:
+                    Debug.LogError("I don't know what " + state + " is!");
+                    break;
+            }
+        }
+
         // Delegate Event that is called when the cutscene is completed
         private void OnCutsceneComplete(PlayableDirector aDirector)
         {
-            GameManager.Instance.MainCamera.RevertToOrigTransform();
+            if(canResetCamera)
+            {
+                GameManager.Instance.MainCamera.RevertToOrigTransform();
+                GameManager.Instance.MainCamera.objectToFollow = GameManager.Instance.PlayerReference.transform;
+            }
             EventOutcome();
         }
     }
