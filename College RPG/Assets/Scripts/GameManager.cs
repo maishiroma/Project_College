@@ -18,7 +18,7 @@ namespace MattScripts {
     }
 
     public class GameManager : MonoBehaviour {
-
+        
         [Header("Prefab References")]
         public GameObject playerPrefab;
 
@@ -37,13 +37,14 @@ namespace MattScripts {
             set {
                 currentState = value;
 
-                // When the game is in a certain state, we disable the player's controller
+                // When the game is in a certain state, we disable the player's controller, if applicable
                 switch(currentState)
                 {
                     case GameStates.NORMAL:
                         player.GetComponent<CharacterController>().EnableController();
                         break;
                     case GameStates.EVENT:
+                    case GameStates.TRAVEL:
                         player.GetComponent<CharacterController>().DisableController();
                         break;
                 }
@@ -90,41 +91,52 @@ namespace MattScripts {
         {
             if(scene.buildIndex != 1)
             {
-                StartCoroutine(SetUpScene());
+                StartCoroutine(SetUpScene(scene.buildIndex));
             }
         }
 
         // Called in OnLevelFinishedLoading so that the game can load up certain things
-        private IEnumerator SetUpScene()
+        private IEnumerator SetUpScene(int sceneIndex)
         {
-            // We first find the position of the PlayerSpawn GameObject where we will put the player at
-            Vector3 newPos = GameObject.FindWithTag("PlayerSpawn").transform.position;
-            yield return new WaitForEndOfFrame();
+            // We first find the PlayerSpawn GameObject where we will put the player at and the main camera
+            Vector3 playerSpawn = GameObject.FindWithTag("PlayerSpawn").transform.position;
+            mainCamera = GameObject.FindWithTag("MainCamera").GetComponent<CameraController>();
 
-            // We first check if we have the player spawned in
+            // We then check if we have the player spawned in
             if(player == null)
             {
                 // If we can't find the player, we spawn the player in the level
-                player = Instantiate(playerPrefab, newPos, Quaternion.identity);
+                player = Instantiate(playerPrefab, playerSpawn, Quaternion.identity);
                 DontDestroyOnLoad(player);
             }
             else
             {
                 // We just find the player in the game scene
                 player = GameObject.FindWithTag("Player");
-                player.GetComponent<CharacterController>().WarpPlayer(newPos);
+                player.GetComponent<CharacterController>().WarpCharacter(playerSpawn);
             }
             yield return new WaitForEndOfFrame();
 
-            // We then reassign any crucial components that are related to the player or main camera
-            mainCamera = GameObject.FindWithTag("MainCamera").GetComponent<CameraController>();
-            mainCamera.objectToFollow = player.transform;
-            yield return new WaitForEndOfFrame();
+            // We check to see what scene we are in. If we are in a cutscene, we do an additional step with the player
+            // All cutscenes will be in a build index < 3 (for now)
+            if(sceneIndex < 3)
+            {
+                mainCamera.objectToFollow = player.transform;
 
-            // We enable the player to move and the game resumes
-            player.GetComponent<CharacterController>().EnableController();
-            CurrentState = GameStates.NORMAL;
-            yield return null;
+                // We fade into the scene
+                GameObject.FindWithTag("FadeUI").GetComponent<Image>().CrossFadeAlpha(0, 0.5f, true);
+                yield return new WaitForSeconds(0.5f);
+
+                // We enable the player to move and the game resumes
+                player.GetComponent<CharacterController>().EnableController();
+                CurrentState = GameStates.NORMAL;
+            }
+            else
+            {
+                // If we are in a cutscene, we only fade into the scene
+                GameObject.FindWithTag("FadeUI").GetComponent<Image>().CrossFadeAlpha(0, 0.5f, true);
+                yield return new WaitForSeconds(0.5f);
+            }
         }
 	}
 }

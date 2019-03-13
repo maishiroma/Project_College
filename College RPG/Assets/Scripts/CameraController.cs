@@ -26,7 +26,17 @@ namespace MattScripts {
         public float maxYPos;
         public float minZPos;
         public float maxZPos;
-       
+
+        // Private variables
+        private Quaternion origRotation;
+        private Vector3 origPosition;
+
+        // We initially set up the private variables
+        private void Start()
+        {
+            SaveTransform();
+        }
+
         // We update the position of the camera based on the player's movement
         private void LateUpdate()
         {
@@ -59,6 +69,7 @@ namespace MattScripts {
         // When the camera exits a wall, the wall becomes apparent again
 		private void OnTriggerExit(Collider other)
 		{
+            // This is how you compare if the layer you collided with is the specified layer
             if(((1<<other.gameObject.layer) & solidSurfaceLayer) != 0)
             {
                 MeshRenderer mr = other.gameObject.GetComponent<MeshRenderer>();
@@ -71,7 +82,25 @@ namespace MattScripts {
                 StandardShaderUtils.ChangeRenderMode(mr.material, StandardShaderUtils.BlendMode.Opaque);
             }
 		}
+    
+        // We save the current position and rotation of the camera into the script
+        public void SaveTransform()
+        {
+            if(gameObject != null)
+            {
+                origPosition = gameObject.transform.position;
+                origRotation = gameObject.transform.rotation;
+            }
+        }
+
+        // We revert to the last saved position and rotation on the camera
+        public void LoadSavedTransform()
+        {
+            if(gameObject != null)
+            {
+                gameObject.transform.position = origPosition;
+                gameObject.transform.rotation = origRotation;
+            }
+        }
     }
 }
-
-

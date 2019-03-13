@@ -12,19 +12,22 @@ namespace MattScripts {
     
     public class TransitionArea : MonoBehaviour {
 
-        public bool toNewScene;
-        public int newSceneIndex;
-        public float fadeTime = 1f;
-        public float lerpValue = 0.1f;
+        public bool showTriggerArea;            // Should this script show the box gizmo on how large the triggerbox of this is?
+        public bool toNewScene;                 // Should we go to a new scene?
 
-        public float cameraMinX;
+        public int newSceneIndex;               // What is the index number of the new scene?
+
+        public float fadeTime = 1f;             // How long does the fade transition last?
+        public float lerpValue = 0.1f;          // How quickly does the fade in/out act?
+
+        public float cameraMinX;                // All of these vars change the binding box of the main camera
         public float cameraMaxX;
         public float cameraMinY;
         public float cameraMaxY;
         public float cameraMinZ;
         public float cameraMaxZ;
 
-        public BoxCollider activateArea;
+        public BoxCollider activateArea;        // Hard references to external components
         public Transform travelSpot;
         public Image fadeOverlay;
 
@@ -38,6 +41,16 @@ namespace MattScripts {
             }
         }
 
+        // When selected and when enabled, allows for the hitbox to be visualized
+        private void OnDrawGizmos()
+        {
+            if(showTriggerArea == true)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireCube(activateArea.gameObject.transform.position, activateArea.size);
+            }
+        }
+
         // This is used to time the transition
         private IEnumerator TravelCutscene(GameObject player)
         {
@@ -45,11 +58,10 @@ namespace MattScripts {
             CharacterController playerController = player.GetComponent<CharacterController>();
 
             // We stop the player from moving and fade to black
-            playerController.DisableController();
             fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
             yield return new WaitForSeconds(fadeTime);
 
-            if(toNewScene)
+            if(toNewScene == true)
             {
                 // We load to the new scene and exit
                 LoadingScreenManager.LoadScene(newSceneIndex);
@@ -58,7 +70,7 @@ namespace MattScripts {
             else
             {
                 // We then teleport the player, change their respawn point
-                playerController.WarpPlayer(travelSpot.position);
+                playerController.WarpCharacter(travelSpot.position);
                 yield return new WaitForFixedUpdate();
 
                 // We set the camera to have new bounds so that it will properly show the player
@@ -72,7 +84,6 @@ namespace MattScripts {
 
                 // We then tell the transition to fade back in
                 fadeOverlay.CrossFadeAlpha(0, fadeTime, true);
-                playerController.EnableController();
                 yield return new WaitForSeconds(fadeTime);
 
                 // We tell this invoke we are done!
@@ -88,6 +99,7 @@ namespace MattScripts {
     [CanEditMultipleObjects]
     public class TransitionAreaEditor : Editor {
 
+        SerializedProperty showTriggerArea_Prop;
         SerializedProperty toNewScene_Prop;
         SerializedProperty newSceneIndex_Prop;
         SerializedProperty fadeTime_Prop;
@@ -107,6 +119,7 @@ namespace MattScripts {
         // Sets up all of the serialized properties
 		private void OnEnable()
 		{
+            showTriggerArea_Prop = serializedObject.FindProperty("showTriggerArea");
             toNewScene_Prop = serializedObject.FindProperty("toNewScene");
             newSceneIndex_Prop = serializedObject.FindProperty("newSceneIndex");
             fadeTime_Prop = serializedObject.FindProperty("fadeTime");
@@ -165,6 +178,7 @@ namespace MattScripts {
             GUILayout.Space(3f);
 
             EditorGUI.indentLevel++;
+            showTriggerArea_Prop.boolValue = EditorGUILayout.Toggle("Show Trigger?", showTriggerArea_Prop.boolValue);
             fadeTime_Prop.floatValue = EditorGUILayout.Slider("Fade Time", fadeTime_Prop.floatValue, 0.5f, 2f);
             lerpValue_Prop.floatValue = EditorGUILayout.Slider("Lerp Value", lerpValue_Prop.floatValue, 0.1f, 1f);
             EditorGUI.indentLevel--;

@@ -19,6 +19,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4865966261012484}
+  - component: {fileID: 95643339496296120}
   - component: {fileID: 20851037162815280}
   - component: {fileID: 81935596037754400}
   - component: {fileID: 54147159289966192}
@@ -38,7 +39,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1802961997358168}
   m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
-  m_LocalPosition: {x: 0, y: -54.619995, z: -4}
+  m_LocalPosition: {x: 0, y: -54, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -118,6 +119,24 @@ AudioListener:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1802961997358168}
   m_Enabled: 1
+--- !u!95 &95643339496296120
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1802961997358168}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &114677309508385556
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -129,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e879b610abfd48b49ffd399947ece80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  objectToFollow: {fileID: 0}
   solidSurfaceLayer:
     serializedVersion: 2
     m_Bits: 512
