@@ -1,4 +1,4 @@
-﻿/*  This defines how the player moves. Very simple.
+﻿/*  This defines how the character moves. Very simple.
  * 
  */
 
@@ -11,7 +11,7 @@ namespace MattScripts {
     public class CharacterController : MonoBehaviour {
 
         [Header("General Variables")]
-        public float moveSpeed;                     // How fast does the player move?
+        public float moveSpeed;                     // How fast does the character move?
         [Range(0.01f, 5f)]
         public float groundedDisitance;             // The disitance the character needs to be in in order to be considered grounded
         [Range(0.1f, 1f)]
@@ -23,11 +23,10 @@ namespace MattScripts {
         public string LEFTRIGHT_AXIS;
 
         [Header("External Variables")]
-        public GameObject frontOfPlayer;
+        public GameObject frontOfCharacter;         // Visualizes the front of the player aka, the direction the player is facing
 
         // Private variables
-        [SerializeField]
-        private Rigidbody playerRB;
+        private Rigidbody characterRb;
         private Vector3 targetVelocity;
         private float verticalInput;
         private float horizontalInput;
@@ -36,27 +35,33 @@ namespace MattScripts {
         // Turns off the controller. Should be used instead of calling .enabled, since this turns off multiple aspects to the controller
         public void DisableController()
         {
-            playerRB.velocity = Vector3.zero;
-            playerRB.isKinematic = true;
-            enabled = false;
+            if(enabled == true)
+            {
+                characterRb.velocity = Vector3.zero;
+                characterRb.isKinematic = true;
+                enabled = false;
+            }
         }
 
         // Reactivates the controller. Should be used instead of calling .enabled
         public void EnableController()
         {
-            verticalInput = 0;
-            horizontalInput = 0;
-            playerRB.isKinematic = false;
-            enabled = true;
+            if(enabled == false)
+            {
+                verticalInput = 0;
+                horizontalInput = 0;
+                characterRb.isKinematic = false;
+                enabled = true;
+            }
         }
 
-        // We warp the player to the new position
+        // We warp the character to the new position
         // We only do this if this is disabled
-        public void WarpPlayer(Vector3 newPos)
+        public void WarpCharacter(Vector3 newPos)
         {
-            if(isActiveAndEnabled == false)
+            if(enabled == false)
             {
-                playerRB.position = newPos;
+                characterRb.position = newPos;
             }
         }
 
@@ -66,14 +71,11 @@ namespace MattScripts {
             horizontalInput = 0;
             verticalInput = 0;
             targetVelocity = Vector3.zero;
-
-            if(gameObject.GetComponent<Rigidbody>() == null)
-            {
-                Debug.LogError("You forgot to add a Rigidbody to the character!");
-            }
+            characterRb = GetComponent<Rigidbody>();
         }
 
         // Used for non physics update
+        // In this case, it is for input gets
         private void Update()
         {
             GetInput();
@@ -83,42 +85,42 @@ namespace MattScripts {
         private void FixedUpdate()
         {
             CheckIfGrounded();
-            MovePlayer();
+            HorizontalMovement();
             VerticalMovement();
 
-            // This reorientates the gameobject that is representing the front of the player
+            // This reorientates the frontOfCharacter gameobject
             if(targetVelocity.normalized.magnitude > 0.5f && isGrounded == true)
             {
-                frontOfPlayer.transform.localPosition = targetVelocity.normalized / 2f;
+                frontOfCharacter.transform.localPosition = targetVelocity.normalized / 2f;
             }
-            playerRB.velocity = gameObject.transform.TransformDirection(targetVelocity);
+            characterRb.velocity = gameObject.transform.TransformDirection(targetVelocity);
         }
 
-        // Gets the player Input and used in the Update
+        // Gets the character Input and
         private void GetInput()
         {
             verticalInput = Input.GetAxis(UPDOWN_AXIS);
             horizontalInput = Input.GetAxis(LEFTRIGHT_AXIS);
         }
 
-        // Moves the player around the world
-        private void MovePlayer()
+        // Moves the character around
+        private void HorizontalMovement()
         {
             targetVelocity.z = moveSpeed * verticalInput;
             targetVelocity.x = moveSpeed * horizontalInput;
         }
     
-        // Moves the player upward, downward, or staying on the ground.
+        // Moves the character upward, downward, or staying on the ground.
         private void VerticalMovement()
         {
             if(isGrounded == true)
             {
-                // The player is grounded
+                // The character is grounded
                 targetVelocity.y = 0;
             }
             else if(isGrounded == false)
             {
-                // The player is falling
+                // The character is falling
                 targetVelocity.y -= gravityAcceleration;
             }
             else
@@ -128,7 +130,7 @@ namespace MattScripts {
             }
         }
     
-        // Checks if the player is grounded and updated isGrounded
+        // Checks if the character is grounded and updates isGrounded
         private void CheckIfGrounded()
         {
             if(Physics.Raycast(gameObject.transform.position, Vector3.down, groundedDisitance, solidWallLayer))

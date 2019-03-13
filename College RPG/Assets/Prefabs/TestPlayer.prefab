@@ -211,8 +211,7 @@ MonoBehaviour:
     m_Bits: 512
   UPDOWN_AXIS: Vertical
   LEFTRIGHT_AXIS: Horizontal
-  frontOfPlayer: {fileID: 1991670993564374}
-  playerRB: {fileID: 54045901853797330}
+  frontOfCharacter: {fileID: 1991670993564374}
 --- !u!136 &136287662766073522
 CapsuleCollider:
   m_ObjectHideFlags: 1

@@ -69,6 +69,7 @@ namespace MattScripts {
         // When the camera exits a wall, the wall becomes apparent again
 		private void OnTriggerExit(Collider other)
 		{
+            // This is how you compare if the layer you collided with is the specified layer
             if(((1<<other.gameObject.layer) & solidSurfaceLayer) != 0)
             {
                 MeshRenderer mr = other.gameObject.GetComponent<MeshRenderer>();
@@ -82,7 +83,7 @@ namespace MattScripts {
             }
 		}
     
-        // We save the position and rotation of the camera
+        // We save the current position and rotation of the camera into the script
         public void SaveTransform()
         {
             if(gameObject != null)
@@ -92,8 +93,8 @@ namespace MattScripts {
             }
         }
 
-        // We revert to the saved position and rotation on the camera
-        public void RevertToOrigTransform()
+        // We revert to the last saved position and rotation on the camera
+        public void LoadSavedTransform()
         {
             if(gameObject != null)
             {

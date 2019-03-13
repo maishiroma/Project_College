@@ -12,20 +12,22 @@ namespace MattScripts {
     
     public class TransitionArea : MonoBehaviour {
 
-        public bool showTriggerArea;
-        public bool toNewScene;
-        public int newSceneIndex;
-        public float fadeTime = 1f;
-        public float lerpValue = 0.1f;
+        public bool showTriggerArea;            // Should this script show the box gizmo on how large the triggerbox of this is?
+        public bool toNewScene;                 // Should we go to a new scene?
 
-        public float cameraMinX;
+        public int newSceneIndex;               // What is the index number of the new scene?
+
+        public float fadeTime = 1f;             // How long does the fade transition last?
+        public float lerpValue = 0.1f;          // How quickly does the fade in/out act?
+
+        public float cameraMinX;                // All of these vars change the binding box of the main camera
         public float cameraMaxX;
         public float cameraMinY;
         public float cameraMaxY;
         public float cameraMinZ;
         public float cameraMaxZ;
 
-        public BoxCollider activateArea;
+        public BoxCollider activateArea;        // Hard references to external components
         public Transform travelSpot;
         public Image fadeOverlay;
 
@@ -56,11 +58,10 @@ namespace MattScripts {
             CharacterController playerController = player.GetComponent<CharacterController>();
 
             // We stop the player from moving and fade to black
-            playerController.DisableController();
             fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
             yield return new WaitForSeconds(fadeTime);
 
-            if(toNewScene)
+            if(toNewScene == true)
             {
                 // We load to the new scene and exit
                 LoadingScreenManager.LoadScene(newSceneIndex);
@@ -69,7 +70,7 @@ namespace MattScripts {
             else
             {
                 // We then teleport the player, change their respawn point
-                playerController.WarpPlayer(travelSpot.position);
+                playerController.WarpCharacter(travelSpot.position);
                 yield return new WaitForFixedUpdate();
 
                 // We set the camera to have new bounds so that it will properly show the player
@@ -83,7 +84,6 @@ namespace MattScripts {
 
                 // We then tell the transition to fade back in
                 fadeOverlay.CrossFadeAlpha(0, fadeTime, true);
-                playerController.EnableController();
                 yield return new WaitForSeconds(fadeTime);
 
                 // We tell this invoke we are done!

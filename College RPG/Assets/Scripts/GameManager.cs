@@ -44,6 +44,7 @@ namespace MattScripts {
                         player.GetComponent<CharacterController>().EnableController();
                         break;
                     case GameStates.EVENT:
+                    case GameStates.TRAVEL:
                         player.GetComponent<CharacterController>().DisableController();
                         break;
                 }
@@ -112,7 +113,7 @@ namespace MattScripts {
             {
                 // We just find the player in the game scene
                 player = GameObject.FindWithTag("Player");
-                player.GetComponent<CharacterController>().WarpPlayer(playerSpawn);
+                player.GetComponent<CharacterController>().WarpCharacter(playerSpawn);
             }
             yield return new WaitForEndOfFrame();
 

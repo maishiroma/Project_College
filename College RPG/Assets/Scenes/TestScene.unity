@@ -855,6 +855,7 @@ MonoBehaviour:
   interactIconUI: {fileID: 924270935}
   objectToInteract: {fileID: 1699893077}
   canReplayEvent: 1
+  canResetCamera: 1
 --- !u!65 &399366610
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1211,11 +1212,14 @@ MonoBehaviour:
   interactIconUI: {fileID: 924270935}
   objectToInteract: {fileID: 1558988429}
   typeWriteDelay: 0.05
+  endDialogueEvent: {fileID: 0}
+  associatedCutscene: {fileID: 0}
   listOfDialogue:
   - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
     nameText: Dummy
     choiceText: 
     dialogueText: Hello, this is a dialogue box
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 0
     childrenNodeIds: 01000000
@@ -1223,10 +1227,10 @@ MonoBehaviour:
     nameText: Dummy
     choiceText: 
     dialogueText: I may die soon, bye
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 1
     childrenNodeIds: 
-  endDialogueEvent: {fileID: 0}
   playerChoiceUI: {fileID: 2107786890}
   selectChoiceHighlight: {fileID: 11400000, guid: 1cc3a810285fe4693978f2e55394b4cf,
     type: 2}
@@ -1440,7 +1444,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 899782938}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 54.22, y: -0.13999999, z: 0}
+  m_LocalPosition: {x: 54.22, y: 0.5, z: 0}
   m_LocalScale: {x: 0.25543, y: 0.25543, z: 0.25543}
   m_Children: []
   m_Father: {fileID: 1737168673}
@@ -1517,7 +1521,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1001745402}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 54.22, y: -0.14, z: 0}
+  m_LocalPosition: {x: 54.22, y: 0.5, z: 0}
   m_LocalScale: {x: 0.25543, y: 0.25543, z: 0.25543}
   m_Children: []
   m_Father: {fileID: 647919087}
@@ -3039,6 +3043,7 @@ MonoBehaviour:
   interactIconUI: {fileID: 924270935}
   objectToInteract: {fileID: 193674124}
   canReplayEvent: 0
+  canResetCamera: 1
 --- !u!65 &1824196230
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3177,7 +3182,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1866035427}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -57, z: -1.8599968}
+  m_LocalPosition: {x: 0, y: -56.5, z: -1.8599968}
   m_LocalScale: {x: 0.25543, y: 0.25543, z: 0.25543}
   m_Children: []
   m_Father: {fileID: 0}
@@ -3487,11 +3492,14 @@ MonoBehaviour:
   interactIconUI: {fileID: 924270935}
   objectToInteract: {fileID: 1558988429}
   typeWriteDelay: 0.05
+  endDialogueEvent: {fileID: 1958646008}
+  associatedCutscene: {fileID: 0}
   listOfDialogue:
   - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
     nameText: Dummy
     choiceText: 
     dialogueText: Wot in Tarnation is dis
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 0
     childrenNodeIds: 010000000200000003000000
@@ -3499,6 +3507,7 @@ MonoBehaviour:
     nameText: Dummy 2
     choiceText: NANI
     dialogueText: This is intresting
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 1
     childrenNodeIds: 02000000
@@ -3506,6 +3515,7 @@ MonoBehaviour:
     nameText: Dummy
     choiceText: WHAT?!
     dialogueText: asdasdsadasdasdasd
+    delayTime: 0
     endEvent: {fileID: 1895966736}
     nodeId: 2
     childrenNodeIds: 03000000
@@ -3513,6 +3523,7 @@ MonoBehaviour:
     nameText: Dummy2
     choiceText: This is weird
     dialogueText: Arent you weird?
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 3
     childrenNodeIds: 0100000004000000
@@ -3520,10 +3531,10 @@ MonoBehaviour:
     nameText: Dummy
     choiceText: No u
     dialogueText: You are making my head hurt...
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 4
     childrenNodeIds: 
-  endDialogueEvent: {fileID: 1958646008}
   playerChoiceUI: {fileID: 2107786890}
   selectChoiceHighlight: {fileID: 11400000, guid: 1cc3a810285fe4693978f2e55394b4cf,
     type: 2}
@@ -3592,11 +3603,14 @@ MonoBehaviour:
   interactIconUI: {fileID: 924270935}
   objectToInteract: {fileID: 1558988429}
   typeWriteDelay: 0.05
+  endDialogueEvent: {fileID: 1244988310}
+  associatedCutscene: {fileID: 0}
   listOfDialogue:
   - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
     nameText: Dummy
     choiceText: 
     dialogueText: This is an activated event
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 0
     childrenNodeIds: 01000000
@@ -3604,6 +3618,7 @@ MonoBehaviour:
     nameText: Dummy
     choiceText: 
     dialogueText: What is this meaning?
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 1
     childrenNodeIds: 02000000
@@ -3611,10 +3626,10 @@ MonoBehaviour:
     nameText: Dummy
     choiceText: 
     dialogueText: WOAH!
+    delayTime: 0
     endEvent: {fileID: 0}
     nodeId: 2
     childrenNodeIds: 
-  endDialogueEvent: {fileID: 1244988310}
   playerChoiceUI: {fileID: 2107786890}
   selectChoiceHighlight: {fileID: 11400000, guid: 1cc3a810285fe4693978f2e55394b4cf,
     type: 2}

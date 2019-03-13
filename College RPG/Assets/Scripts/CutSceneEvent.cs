@@ -11,8 +11,8 @@ namespace MattScripts {
     public class CutSceneEvent : BaseEvent
     {
         [Header("Sub Variables")]
-        public bool canReplayEvent = false;
-        public bool canResetCamera = true;
+        public bool canReplayEvent = false;     // Can the cutscene be replayed upon completion?
+        public bool canResetCamera = true;      // Does the camera reset to be near the player once the cutscene is over?
 
         // Private Variables
         private PlayableDirector cutsceneObject;
@@ -33,10 +33,11 @@ namespace MattScripts {
             cutsceneObject = objectToInteract.GetComponent<PlayableDirector>();
 		}
 
-		// Stops the camera from following the player and sets up any useful methods needed
+		// Stops the camera from following the player and sets up the cutscene visuals
 		public override void EventSetup()
 		{
-            if(activateByInteract)
+            // We turn off the interactIconUI
+            if(activateByInteract == true)
             {
                 interactIconUI.SetActive(false);
             }
@@ -50,23 +51,31 @@ namespace MattScripts {
                 }
             }
 
-            GameManager.Instance.MainCamera.SaveTransform();
+            // We then save the camera's last position and tell the GameManager that we are in a cutscene
+            if(canResetCamera == true)
+            {
+                GameManager.Instance.MainCamera.SaveTransform();
+            }
             GameManager.Instance.MainCamera.objectToFollow = null;
             GameManager.Instance.CurrentState = GameStates.EVENT;
 		}
 
-		// Resets the main camera to follow the player again.
+		// Resets the cutscene to go back to the normal game mode, if necessary
 		public override void EventOutcome()
         {
+            // Note that if the event can either be replayed or activated by interacting, the game will reset back to normal
+            // If neither are true, when the cutscene ends, the game WILL NOT toggle back!
+            // This is done because in special dialogue and cutscene scenes, we handle when the game is ready to go back.
             if(canReplayEvent == true)
             {
                 ResetEvent();
+                GameManager.Instance.CurrentState = GameStates.NORMAL;
             }
-            if(activateByInteract)
+            if(activateByInteract == true)
             {
                 interactIconUI.SetActive(true);
+                GameManager.Instance.CurrentState = GameStates.NORMAL;
             }
-            GameManager.Instance.CurrentState = GameStates.NORMAL;
         }
 
         // Changes the state of the cutscene if it can
@@ -102,9 +111,9 @@ namespace MattScripts {
         // Delegate Event that is called when the cutscene is completed
         private void OnCutsceneComplete(PlayableDirector aDirector)
         {
-            if(canResetCamera)
+            if(canResetCamera == true)
             {
-                GameManager.Instance.MainCamera.RevertToOrigTransform();
+                GameManager.Instance.MainCamera.LoadSavedTransform();
                 GameManager.Instance.MainCamera.objectToFollow = GameManager.Instance.PlayerReference.transform;
             }
             EventOutcome();
