@@ -14,7 +14,8 @@ namespace MattScripts {
     public enum GameStates {
         NORMAL,
         EVENT,
-        TRAVEL
+        TRAVEL,
+        MENU
     }
 
     public class GameManager : MonoBehaviour {
@@ -45,7 +46,9 @@ namespace MattScripts {
                         break;
                     case GameStates.EVENT:
                     case GameStates.TRAVEL:
+                    case GameStates.MENU:
                         player.GetComponent<CharacterController>().DisableController();
+                        // TODO: When creating other NPCS that move, they should pause here too
                         break;
                 }
             }
@@ -115,6 +118,7 @@ namespace MattScripts {
                 player = GameObject.FindWithTag("Player");
                 player.GetComponent<CharacterController>().WarpCharacter(playerSpawn);
             }
+
             yield return new WaitForEndOfFrame();
 
             // We check to see what scene we are in. If we are in a cutscene, we do an additional step with the player
