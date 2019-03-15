@@ -83,20 +83,90 @@ namespace MattScripts {
                 // Logic for selecting a field
                 if(Input.GetButtonDown(selectInput))
                 {
-                    //TODO: Write logic for interacting
-                    Debug.Log("We selected " + currentMenuParent.GetChild(currentMenuIndex));
+                    switch(currentState)
+                    {
+                        case MenuStates.MAIN:
+                            MainMenuActions();
+                            break;
+                        case MenuStates.ITEM:
+                        case MenuStates.PARTY:
+                        case MenuStates.GEAR:
+                        case MenuStates.STATUS:
+                            break;
+                    }
                 }
                 else if(Input.GetButtonDown(cancelInput))
                 {
-                    // TODO: Write logic for canceling
-                    Debug.Log("We canceled from " + currentMenuParent.GetChild(currentMenuIndex));
+                    //ReturnToPreviousOption();
                 }
             }
 		}
 
+        // The actions taken if we are in the main menu
+        private void MainMenuActions()
+        {
+            if(currentState == MenuStates.MAIN)
+            {
+                if(currentMenuIndex == 4)
+                {
+                    // We exit the menu
+                    StartCoroutine(HideMenu());
+                }
+                else
+                {
+                    // We disable the main menu, save the previous index, and reset the index to 0
+                    pauseMenuObject.transform.GetChild(0).gameObject.SetActive(false);
+                    prevIndexMenus.Push(currentMenuIndex);
+                    currentMenuIndex = 0;
+
+                    switch(currentMenuIndex)
+                    {
+                        case 0:
+                            // We go to the item menu
+                            pauseMenuObject.transform.GetChild(1).gameObject.SetActive(true);
+                            currentMenuParent = pauseMenuObject.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0);
+                            ChangeSelectedText(currentMenuIndex, 0);
+                            currentState = MenuStates.ITEM;
+                            break;
+                        case 1:
+                            // We go to the party menu
+                            pauseMenuObject.transform.GetChild(2).gameObject.SetActive(true);
+                            currentMenuParent = pauseMenuObject.transform.GetChild(2);
+                            ChangeSelectedText(currentMenuIndex, 0);
+                            currentState = MenuStates.PARTY;
+                            break;
+                        case 2:
+                            // We go to the gear menu
+                            pauseMenuObject.transform.GetChild(3).gameObject.SetActive(true);
+                            currentMenuParent = pauseMenuObject.transform.GetChild(3);
+                            ChangeSelectedText(currentMenuIndex, 0);
+                            currentState = MenuStates.GEAR;
+                            break;
+                        case 3:
+                            // We go to the status menu
+                            pauseMenuObject.transform.GetChild(4).gameObject.SetActive(true);
+                            currentMenuParent = pauseMenuObject.transform.GetChild(4);
+                            ChangeSelectedText(currentMenuIndex, 0);
+                            currentState = MenuStates.STATUS;
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Depending on where we are, we hop back to the previous option
+        private void ReturnToPreviousOption()
+        {
+            // TODO: make a specific data type that not only keeps track of index pos, but also where that menu item was?
+            int newIndex = prevIndexMenus.Pop();
+            ChangeSelectedText(currentMenuIndex, newIndex);
+            currentMenuIndex = newIndex;
+        }
+
         // Helper method that changes the two texts in the currentMenuParent at the specified indexes to change gradiants
         private void ChangeSelectedText(int oldIndex, int newIndex)
         {
+            print(currentMenuParent.GetChild(oldIndex).name);
             currentMenuParent.GetChild(oldIndex).GetComponent<TextMeshProUGUI>().colorGradientPreset = null;
             currentMenuParent.GetChild(newIndex).GetComponent<TextMeshProUGUI>().colorGradientPreset = selectChoiceHighlight;
         }
