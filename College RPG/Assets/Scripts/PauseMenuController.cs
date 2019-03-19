@@ -46,6 +46,8 @@ namespace MattScripts {
         private GameObject gearMenuObject;
         private GameObject statusMenuObject;
 
+        private PlayerInventory playerInventory;                       // A reference to the player inventory
+
         // Hides the menu upon startup
 		private void Start()
 		{
@@ -56,6 +58,8 @@ namespace MattScripts {
             partyMenuObject = pauseMenuObject.transform.GetChild(2).gameObject;
             gearMenuObject = pauseMenuObject.transform.GetChild(3).gameObject;
             statusMenuObject = pauseMenuObject.transform.GetChild(4).gameObject;
+
+            playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
 
             StartCoroutine(HideMenu());
 		}
@@ -86,15 +90,17 @@ namespace MattScripts {
             if(currentState != MenuStates.HIDDEN)
             {
                 // Handles moving the player input up and down when the player is selecting an option
-                if(Input.GetKeyDown(KeyCode.W) && currentMenuIndex > 0)
+                if(Input.GetKeyDown(KeyCode.W) && currentMenuIndex > 0 && CheckIfOptionIsValid(currentMenuIndex - 1))
                 {
                     ChangeSelectedText(currentMenuIndex, currentMenuIndex - 1);
                     currentMenuIndex--;
+                    UpdateMenuContext();
                 }
-                else if(Input.GetKeyDown(KeyCode.S) && currentMenuIndex + 1 < currentMenuParent.childCount)
+                else if(Input.GetKeyDown(KeyCode.S) && currentMenuIndex + 1 < currentMenuParent.childCount && CheckIfOptionIsValid(currentMenuIndex + 1))
                 {
                     ChangeSelectedText(currentMenuIndex, currentMenuIndex + 1);
                     currentMenuIndex++;
+                    UpdateMenuContext();
                 }
 
                 // Logic for selecting a field
@@ -121,6 +127,21 @@ namespace MattScripts {
             }
 		}
 
+        // Depending on what menu we are in, we update what is currently displayed after we scroll on something
+        private void UpdateMenuContext()
+        {
+            switch(currentState)
+            {
+                case MenuStates.ITEM:
+                    // We update the item description
+                    if(currentMenuIndex < playerInventory.GetInventorySize())
+                    {
+                        itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemDataAtIndex(currentMenuIndex).itemDescription;
+                    }
+                    break;
+            }
+        }
+
         // The actions taken if we are in the main menu
         private void MainMenuActions()
         {
@@ -143,9 +164,7 @@ namespace MattScripts {
                     {
                         case 0:
                             // We go to the item menu
-                            itemMenuObject.SetActive(true);
-                            currentMenuParent = itemMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
-                            currentState = MenuStates.ITEM;
+                            InitializeItemMenu();
                             break;
                         case 1:
                             // We go to the party menu
@@ -166,6 +185,7 @@ namespace MattScripts {
 
                     currentMenuIndex = 0;
                     ChangeSelectedText(currentMenuIndex, 0);
+                    UpdateMenuContext();
                 }
             }
         }
@@ -211,6 +231,31 @@ namespace MattScripts {
             }
         }
 
+        // We initialize the item menu
+        private void InitializeItemMenu()
+        {
+            itemMenuObject.SetActive(true);
+            currentMenuParent = itemMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
+
+            // We update all of the items in the menu to reflect the inventory
+            int currItemIndex = 0;
+            while(currItemIndex < playerInventory.GetInventorySize())
+            {
+                ItemData currItem = playerInventory.GetItemDataAtIndex(currItemIndex);
+                currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = currItem.itemName;
+                ++currItemIndex;
+            }
+
+            // For the rest of the items in the list, we clear them from the screen
+            while(currItemIndex < currentMenuParent.childCount)
+            {
+                currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = "";
+                ++currItemIndex;
+            }
+
+            currentState = MenuStates.ITEM;
+        }
+
         // Helper method that changes the two texts in the currentMenuParent at the specified indexes to change gradiants
         // NOTE: if we specify -1 for the newIndex, we change the old index point only.
         private void ChangeSelectedText(int oldIndex, int newIndex)
@@ -224,6 +269,16 @@ namespace MattScripts {
                     currentMenuParent.GetChild(newIndex).GetComponent<TextMeshProUGUI>().colorGradientPreset = selectChoiceHighlight;
                 }
             }
+        }
+
+        // Checks if the new index point is a valid spot to move to
+        private bool CheckIfOptionIsValid(int newIndex)
+        {
+            if(currentMenuParent.GetChild(newIndex).GetComponent<TextMeshProUGUI>().text == "")
+            {
+                return false;
+            }
+            return true;
         }
 
         // Opens up the menu to the player
