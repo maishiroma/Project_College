@@ -134,9 +134,9 @@ namespace MattScripts {
             {
                 case MenuStates.ITEM:
                     // We update the item description
-                    if(currentMenuIndex < playerInventory.GetInventorySize())
+                    if(currentMenuIndex < playerInventory.GetItemInventorySize())
                     {
-                        itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemDataAtIndex(currentMenuIndex).itemDescription;
+                        itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemAtIndex(currentMenuIndex).itemDescription;
                     }
                     break;
             }
@@ -239,13 +239,12 @@ namespace MattScripts {
 
             // We update all of the items in the menu to reflect the inventory
             int currItemIndex = 0;
-            while(currItemIndex < playerInventory.GetInventorySize())
+            while(currItemIndex < playerInventory.GetItemInventorySize())
             {
-                ItemData currItem = playerInventory.GetItemDataAtIndex(currItemIndex);
+                ItemData currItem = playerInventory.GetItemAtIndex(currItemIndex);
                 currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = currItem.itemName;
                 ++currItemIndex;
             }
-
             // For the rest of the items in the list, we clear them from the screen
             while(currItemIndex < currentMenuParent.childCount)
             {

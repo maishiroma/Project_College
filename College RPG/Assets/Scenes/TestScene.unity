@@ -1643,7 +1643,7 @@ MonoBehaviour:
   interactIconUI: {fileID: 924270935}
   objectToInteract: {fileID: 1558988429}
   typeWriteDelay: 0.05
-  endDialogueEvent: {fileID: 0}
+  endDialogueEvent: {fileID: 1282662788}
   associatedCutscene: {fileID: 0}
   listOfDialogue:
   - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
@@ -2310,19 +2310,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45711807fb6c349b4b9920d92def5b88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  activateByInteract: 0
+  showTriggerArea: 0
+  interactKey: 0
+  activateArea: {fileID: 0}
+  interactIconUI: {fileID: 0}
+  objectToInteract: {fileID: 0}
   itemToGive: {fileID: 11400000, guid: 7ea84caf6789748639ede710fcbc5432, type: 2}
+  quantity: 1
 --- !u!4 &1282662789
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1282662787}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 57.619995, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_Father: {fileID: 1605971972}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1299446804
 GameObject:
@@ -2620,6 +2627,54 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1357116362}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1366863487
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1366863489}
+  - component: {fileID: 1366863488}
+  m_Layer: 0
+  m_Name: ItemEvent (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1366863488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1366863487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45711807fb6c349b4b9920d92def5b88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activateByInteract: 0
+  showTriggerArea: 0
+  interactKey: 0
+  activateArea: {fileID: 0}
+  interactIconUI: {fileID: 0}
+  objectToInteract: {fileID: 0}
+  itemToGive: {fileID: 11400000, guid: 804936840dfd740c0976da4aa65e849b, type: 2}
+  quantity: 1
+--- !u!4 &1366863489
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1366863487}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 8.94, y: -56.6, z: 8.43}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1370909178
 GameObject:
   m_ObjectHideFlags: 0
@@ -3111,7 +3166,7 @@ Transform:
   - {fileID: 1338051209}
   - {fileID: 540865384}
   - {fileID: 1958646009}
-  - {fileID: 1895966737}
+  - {fileID: 1282662789}
   m_Father: {fileID: 232871935}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3483,6 +3538,54 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 5, y: 1, z: 5}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1752495290
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1752495292}
+  - component: {fileID: 1752495291}
+  m_Layer: 0
+  m_Name: ItemEvent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1752495291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1752495290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45711807fb6c349b4b9920d92def5b88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activateByInteract: 0
+  showTriggerArea: 0
+  interactKey: 0
+  activateArea: {fileID: 0}
+  interactIconUI: {fileID: 0}
+  objectToInteract: {fileID: 0}
+  itemToGive: {fileID: 11400000, guid: 7ea84caf6789748639ede710fcbc5432, type: 2}
+  quantity: 1
+--- !u!4 &1752495292
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1752495290}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 8.94, y: -56.6, z: 8.43}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1824196228
 GameObject:
   m_ObjectHideFlags: 0
@@ -3664,54 +3767,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1895966735
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1895966737}
-  - component: {fileID: 1895966736}
-  m_Layer: 0
-  m_Name: RemoveEvent 2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1895966736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1895966735}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6650483f755349a294fc86e7ded8c13, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  activateByInteract: 0
-  showTriggerArea: 0
-  interactKey: 0
-  activateArea: {fileID: 0}
-  interactIconUI: {fileID: 0}
-  objectToInteract: {fileID: 540865380}
-  shouldDeactivate: 1
-  timeToRemove: 1
---- !u!4 &1895966737
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1895966735}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 57.619995, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1605971972}
-  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1958646007
 GameObject:
@@ -4012,7 +4067,7 @@ MonoBehaviour:
     choiceText: WHAT?!
     dialogueText: asdasdsadasdasdasd
     delayTime: 0
-    endEvent: {fileID: 1895966736}
+    endEvent: {fileID: 0}
     nodeId: 2
     childrenNodeIds: 03000000
   - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}

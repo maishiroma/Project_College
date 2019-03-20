@@ -2,23 +2,63 @@
  */
 
 using UnityEngine;
-using System.Collections;
 
 namespace MattScripts {
 
-    public class ItemEvent : MonoBehaviour
+    public class ItemEvent : BaseEvent
     {
+        [Header("Sub Variables")]
         public ScriptableObject itemToGive;
 
-        // Upon being enabled, this event will grant the player the specific object
-		private void OnEnable()
+        [Range(-99,99)]
+        public int quantity = 1;        // How much is granted/taken from the player?
+
+        // Verfiies if the quantity is a valid number
+		private void OnValidate()
 		{
+            if(quantity == 0)
+            {
+                Debug.LogWarning("Quantity cannot be 0! Setting it to 1...");
+                quantity = 1;
+            }
+		}
+
+		// Private variables
+		private PlayerInventory playerInventory;
+
+        // Saves a reference of the player to the script
+		public override void EventSetup()
+		{
+            playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
+		}
+
+		// Upon being enabled, this event will grant the player the specific object
+		public override void EventOutcome()
+        {
+            // TODO: When we have other item types, we need to play out the specific cast and methods
             if(itemToGive is ItemData)
             {
-                Debug.Log("Gave player" + ((ItemData)(itemToGive)).itemName);
-                GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>().AddToInventory((ItemData)itemToGive);
-                gameObject.SetActive(false);
+                InventoryItem newItem = new InventoryItem((ItemData)itemToGive, quantity);
+
+                if(Mathf.Sign(quantity) < 0)
+                {
+                    Debug.Log("Took away " + ((ItemData)(itemToGive)).itemName + " from player.");
+                    playerInventory.RemoveItemFromInventory(newItem, quantity);
+                }
+                else
+                {
+                    Debug.Log("Gave player" + ((ItemData)(itemToGive)).itemName);
+                    playerInventory.AddToInventory(newItem);
+                }
             }
+        }
+
+        // Upon activation, we play out this event
+		private void OnEnable()
+		{
+            EventSetup();
+            EventOutcome();
+            hasActivated = true;
 		}
 	}   
 }
