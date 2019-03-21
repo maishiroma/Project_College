@@ -21,25 +21,38 @@ namespace MattScripts {
         }
     }
 
+    // The object that encapsulates gear in a list
+    [System.Serializable]
+    public class InventoryGear {
+        public GearData specifiedGear;
+        public int quantity;            // How much of this one item is in the list?
+
+        public InventoryGear(GearData newGear, int quantity)
+        {
+            this.specifiedGear = newGear;
+            this.quantity = quantity;
+        }
+    }
+
     // The object that encapsulates characters in a list
     [System.Serializable]
     public class InventoryParty {
-        public CharacterData specifiedPartyMember;
+        public CharacterData specifiedCharacter;
 
         public InventoryParty(CharacterData newCharacter)
         {
-            this.specifiedPartyMember = newCharacter;
+            this.specifiedCharacter = newCharacter;
         }
     }
 
     // The object that encapsulates links in a list
     [System.Serializable]
     public class InventoryLink {
-        public LinkData specifiedLinkData;
+        public LinkData specifiedLink;
 
         public InventoryLink(LinkData newLink)
         {
-            this.specifiedLinkData = newLink;
+            this.specifiedLink = newLink;
         }
     }
 
@@ -47,6 +60,7 @@ namespace MattScripts {
 
         // Private Variables
         private List<InventoryItem> listOfItems;
+        private List<InventoryGear> listOfGear;
         private List<InventoryParty> listOfPartyMembers;
         private List<InventoryLink> listOfLinks;
 
@@ -54,6 +68,7 @@ namespace MattScripts {
 		private void Start()
 		{
             listOfItems = new List<InventoryItem>();
+            listOfGear = new List<InventoryGear>();
             listOfPartyMembers = new List<InventoryParty>();
             listOfLinks = new List<InventoryLink>();
 		}
@@ -73,6 +88,21 @@ namespace MattScripts {
             }
             // If we haven't found an existing one, we add it to the list
             listOfItems.Add(newItem);
+        }
+
+        public void AddToInventory(InventoryGear newGear)
+        {
+            foreach(InventoryGear currGear in listOfGear)
+            {
+                // If this gear already exists in the list, we update the quantity
+                if(currGear.specifiedGear.Equals(newGear.specifiedGear))
+                {
+                    currGear.quantity += newGear.quantity;
+                    return;
+                }
+            }
+            // If we haven't found an existing one, we add it to the list
+            listOfGear.Add(newGear);
         }
 
         public void AddToInventory(InventoryParty newCharacter)
@@ -120,10 +150,50 @@ namespace MattScripts {
                 // If this item already exists in the list, we update the quantity
                 if(currItem.specifiedItem.Equals(specificItem.specifiedItem))
                 {
-                    specificItem.quantity -= quantity;
-                    if(specificItem.quantity < 0)
+                    currItem.quantity -= quantity;
+                    if(currItem.quantity < 0)
                     {
-                        listOfItems.Remove(specificItem);    
+                        listOfItems.Remove(currItem);    
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Removes a specified gear piece from the inventory using its index
+        // Returns true if it was able to do this
+        public bool RemoveGearFromInventory(int gearIndex, int quantity)
+        {
+            if(gearIndex < listOfItems.Count && gearIndex >= 0)
+            {
+                InventoryGear currGear = listOfGear[gearIndex];
+
+                if(currGear.quantity - quantity < 0)
+                {
+                    listOfGear.Remove(currGear);
+                }
+                else
+                {
+                    currGear.quantity -= quantity;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // Like the aboe method, but this one takes a InventoryGear
+        public bool RemoveGearFromInventory(InventoryGear specificGear, int quantity)
+        {
+            foreach(InventoryGear currGear in listOfGear)
+            {
+                // If this gear already exists in the list, we update the quantity
+                if(currGear.specifiedGear.Equals(specificGear.specifiedGear))
+                {
+                    currGear.quantity -= quantity;
+                    if(currGear.quantity < 0)
+                    {
+                        listOfGear.Remove(currGear);    
                     }
                     return true;
                 }
@@ -142,13 +212,24 @@ namespace MattScripts {
             return null;
         }
 
+        // Returns the gearData at the specified index
+        // returns null if it cannot find that gear
+        public GearData GetGearAtIndex(int index)
+        {
+            if(index < listOfGear.Count && index >= 0)
+            {
+                return listOfGear[index].specifiedGear;
+            }
+            return null;
+        }
+
         // Returns the character data at X index
         // Returns null if the index is invalid
         public CharacterData GetCharacterAtIndex(int index)
         {
             if(index < listOfPartyMembers.Count && index >= 0)
             {
-                return listOfPartyMembers[index].specifiedPartyMember;
+                return listOfPartyMembers[index].specifiedCharacter;
             }
             return null;
         }
@@ -159,7 +240,7 @@ namespace MattScripts {
         {
             if(index < listOfLinks.Count && index >= 0)
             {
-                return listOfLinks[index].specifiedLinkData;
+                return listOfLinks[index].specifiedLink;
             }
             return null;
         }
@@ -170,6 +251,12 @@ namespace MattScripts {
             return listOfItems.Count;
         }
 	
+        // Returns the size of the gear inventory
+        public int GetGearInventorySize()
+        {
+            return listOfGear.Count;
+        }
+
         // Returns the size of the party member list
         public int GetPartyInvetorySize()
         {

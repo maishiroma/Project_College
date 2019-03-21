@@ -16,7 +16,7 @@ namespace MattScripts {
         ITEM,
         PARTY,
         GEAR,
-        STATUS,
+        LINK,
         LOADING // The transition state used to prevent any player input
     }
 
@@ -44,7 +44,7 @@ namespace MattScripts {
         private GameObject itemMenuObject;
         private GameObject partyMenuObject;
         private GameObject gearMenuObject;
-        private GameObject statusMenuObject;
+        private GameObject linkMenuObject;
 
         private PlayerInventory playerInventory;                       // A reference to the player inventory
 
@@ -57,7 +57,7 @@ namespace MattScripts {
             itemMenuObject = pauseMenuObject.transform.GetChild(1).gameObject;
             partyMenuObject = pauseMenuObject.transform.GetChild(2).gameObject;
             gearMenuObject = pauseMenuObject.transform.GetChild(3).gameObject;
-            statusMenuObject = pauseMenuObject.transform.GetChild(4).gameObject;
+            linkMenuObject = pauseMenuObject.transform.GetChild(4).gameObject;
 
             playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
 
@@ -104,8 +104,10 @@ namespace MattScripts {
                 }
 
                 // Logic for selecting a field
+                // TODO: Need to implement the activity withing each field.
                 if(Input.GetButtonDown(selectInput))
                 {
+                    Debug.Log("We selected " + currentMenuParent.GetChild(currentMenuIndex).GetComponent<TextMeshProUGUI>().text);
                     // Depending on what state we are in, we do various activities
                     switch(currentState)
                     {
@@ -115,7 +117,7 @@ namespace MattScripts {
                         case MenuStates.ITEM:
                         case MenuStates.PARTY:
                         case MenuStates.GEAR:
-                        case MenuStates.STATUS:
+                        case MenuStates.LINK:
                             break;
                     }
                 }
@@ -139,6 +141,26 @@ namespace MattScripts {
                         itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemAtIndex(currentMenuIndex).itemDescription;
                     }
                     break;
+                case MenuStates.PARTY:
+                    // We update the party description
+                    if(currentMenuIndex < playerInventory.GetPartyInvetorySize())
+                    {
+                        partyMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetCharacterAtIndex(currentMenuIndex).characterName;
+                    }
+                    break;
+                case MenuStates.GEAR:
+                    if(currentMenuIndex < playerInventory.GetGearInventorySize())
+                    {
+                        gearMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetGearAtIndex(currentMenuIndex).gearDescription;
+                    }
+                    break;
+                case MenuStates.LINK:
+                    // We update the link description
+                    if(currentMenuIndex < playerInventory.GetLinkInventorySize())
+                    {
+                        linkMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetLinkAtIndex(currentMenuIndex).linkDescription;
+                    }
+                    break;
             }
         }
 
@@ -159,7 +181,6 @@ namespace MattScripts {
                     prevSizeOfStack = prevIndexMenus.Count;
                     prevIndexMenus.Push(currentMenuIndex);
 
-                    // TODO: Assign proper value for currentMenuParent
                     switch(currentMenuIndex)
                     {
                         case 0:
@@ -168,18 +189,15 @@ namespace MattScripts {
                             break;
                         case 1:
                             // We go to the party menu
-                            partyMenuObject.SetActive(true);
-                            currentState = MenuStates.PARTY;
+                            InitializePartyMenu();
                             break;
                         case 2:
                             // We go to the gear menu
-                            gearMenuObject.SetActive(true);
-                            currentState = MenuStates.GEAR;
+                            InitializeGearMenu();
                             break;
                         case 3:
-                            // We go to the status menu
-                            statusMenuObject.SetActive(true);
-                            currentState = MenuStates.STATUS;
+                            // We go to the link menu
+                            InitializeLinkMenu();
                             break;
                     }
 
@@ -209,8 +227,8 @@ namespace MattScripts {
                         case MenuStates.GEAR:
                             gearMenuObject.SetActive(false);
                             break;
-                        case MenuStates.STATUS:
-                            statusMenuObject.SetActive(false);
+                        case MenuStates.LINK:
+                            linkMenuObject.SetActive(false);
                             break;
                     }
 
@@ -253,6 +271,75 @@ namespace MattScripts {
             }
 
             currentState = MenuStates.ITEM;
+        }
+
+        // We set up all of the variables needed for the party menu
+        private void InitializePartyMenu()
+        {
+            partyMenuObject.SetActive(true);
+            currentMenuParent = partyMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
+
+            int currCharacterIndex = 0;
+            while(currCharacterIndex < playerInventory.GetPartyInvetorySize())
+            {
+                CharacterData currCharacter = playerInventory.GetCharacterAtIndex(currCharacterIndex);
+                currentMenuParent.GetChild(currCharacterIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
+                ++currCharacterIndex;
+            }
+            // For the rest of the items in the list, we clear them from the screen
+            while(currCharacterIndex < currentMenuParent.childCount)
+            {
+                currentMenuParent.GetChild(currCharacterIndex).GetComponent<TextMeshProUGUI>().text = "";
+                ++currCharacterIndex;
+            }
+
+            currentState = MenuStates.PARTY;
+        }
+
+        // We set up all of the variables needed for the gear menu
+        private void InitializeGearMenu()
+        {
+            gearMenuObject.SetActive(true);
+            currentMenuParent = gearMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
+
+            int currGearIndex = 0;
+            while(currGearIndex < playerInventory.GetGearInventorySize())
+            {
+                GearData currGear = playerInventory.GetGearAtIndex(currGearIndex);
+                currentMenuParent.GetChild(currGearIndex).GetComponent<TextMeshProUGUI>().text = currGear.gearName;
+                ++currGearIndex;
+            }
+            // For the rest of the items in the list, we clear them from the screen
+            while(currGearIndex < currentMenuParent.childCount)
+            {
+                currentMenuParent.GetChild(currGearIndex).GetComponent<TextMeshProUGUI>().text = "";
+                ++currGearIndex;
+            }
+
+            currentState = MenuStates.GEAR;
+        }
+
+        // We set up all of the variables needed for the link menu
+        private void InitializeLinkMenu()
+        {
+            linkMenuObject.SetActive(true);
+            currentMenuParent = linkMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
+
+            int currLinkIndex = 0;
+            while(currLinkIndex < playerInventory.GetLinkInventorySize())
+            {
+                LinkData currCharacter = playerInventory.GetLinkAtIndex(currLinkIndex);
+                currentMenuParent.GetChild(currLinkIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.linkName;
+                ++currLinkIndex;
+            }
+            // For the rest of the items in the list, we clear them from the screen
+            while(currLinkIndex < currentMenuParent.childCount)
+            {
+                currentMenuParent.GetChild(currLinkIndex).GetComponent<TextMeshProUGUI>().text = "";
+                ++currLinkIndex;
+            }
+
+            currentState = MenuStates.LINK;
         }
 
         // Helper method that changes the two texts in the currentMenuParent at the specified indexes to change gradiants

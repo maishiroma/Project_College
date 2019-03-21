@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3799099b2fa09413d881fad0d01ed48c, type: 3}
+  m_Name: TestDemon2
+  m_EditorClassIdentifier: 
+  demonSprite: {fileID: 0}
+  demonName: Wumbo
+  demonLevel: 1
+  phyAttackStat: 23
+  phyDefenseStat: 11
+  spAttackStat: 123
+  spDefenseStat: 11
+  spdStat: 1
+  luckStat: 1
+  affinityArray: 01000000010000000100000001000000010000000100000001000000

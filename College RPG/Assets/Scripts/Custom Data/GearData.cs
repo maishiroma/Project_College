@@ -17,6 +17,8 @@ namespace MattScripts
     [CreateAssetMenu(fileName = "New Gear Data", menuName = "Custom Data/Gear")]
     public class GearData : ScriptableObject {
 
+        public Sprite gearSprite;
+
         [Header("General Variables")]
         public GearType typeOfGear;
         public string gearName;
@@ -33,5 +35,26 @@ namespace MattScripts
 
         // TODO: In the future, may add a new attribute that allows for bonus effects when equipping certain gear
         // This may need to be a data type
+    
+        // Compares to see if two ItemDatas are the same
+        public override bool Equals(object other)
+        {
+            GearData compareTo = (GearData)other;
+
+            if(compareTo.gearSprite == gearSprite &&
+               compareTo.gearName == gearName && 
+               compareTo.gearDescription == gearDescription && 
+               compareTo.typeOfGear == typeOfGear)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // Required when overriding Equals
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }   
 }

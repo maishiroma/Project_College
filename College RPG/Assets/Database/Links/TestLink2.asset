@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa2f2f6a7cf8e48f0afd8250754be13d, type: 3}
+  m_Name: TestLink2
+  m_EditorClassIdentifier: 
+  linkName: The Wingnut
+  linkDescription: When you use this, you feel really...weird
+  linkType: 15
+  linkLevel: 5
+  linkDemon: {fileID: 0}
+  linkAttacks: []

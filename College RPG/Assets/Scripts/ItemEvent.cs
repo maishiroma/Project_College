@@ -39,17 +39,45 @@ namespace MattScripts {
             if(itemToGive is ItemData)
             {
                 InventoryItem newItem = new InventoryItem((ItemData)itemToGive, quantity);
-
                 if(Mathf.Sign(quantity) < 0)
                 {
-                    Debug.Log("Took away " + ((ItemData)(itemToGive)).itemName + " from player.");
+                    Debug.Log("Took away " + newItem.specifiedItem.itemName + " from player.");
                     playerInventory.RemoveItemFromInventory(newItem, quantity);
                 }
                 else
                 {
-                    Debug.Log("Gave player" + ((ItemData)(itemToGive)).itemName);
+                    Debug.Log("Gave player " + newItem.specifiedItem.itemName);
                     playerInventory.AddToInventory(newItem);
                 }
+            }
+            else if(itemToGive is GearData)
+            {
+                // We add the new gear to the inventory
+                InventoryGear newGear = new InventoryGear((GearData)itemToGive, quantity);
+                if(Mathf.Sign(quantity) < 0)
+                {
+                    Debug.Log("Took away " + newGear.specifiedGear.gearName + " from player.");
+                    playerInventory.RemoveGearFromInventory(newGear, quantity);
+                }
+                else
+                {
+                    Debug.Log("Gave player " + newGear.specifiedGear.gearName);
+                    playerInventory.AddToInventory(newGear);
+                }
+            }
+            else if(itemToGive is CharacterData)
+            {
+                // We add the new party member to the player's inventory
+                InventoryParty newCharacter = new InventoryParty((CharacterData)itemToGive);
+                Debug.Log("Added " + newCharacter.specifiedCharacter.characterName + " to party.");
+                playerInventory.AddToInventory(newCharacter);
+            }
+            else if(itemToGive is LinkData)
+            {
+                // We add the new link to the player's inventory
+                InventoryLink newLink = new InventoryLink((LinkData)itemToGive);
+                Debug.Log("Added " + newLink.specifiedLink.linkName + " to inventory.");
+                playerInventory.AddToInventory(newLink);
             }
         }
 
