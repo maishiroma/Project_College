@@ -38,5 +38,6 @@ namespace MattScripts
         [Header("External References")]
         public DemonData demonData;
         public List<AttackData> attackList = new List<AttackData>();
+        public GearData[] equippedGear = new GearData[3];
     }   
 }
