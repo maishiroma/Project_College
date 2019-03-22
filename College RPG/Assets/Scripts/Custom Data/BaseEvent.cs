@@ -32,7 +32,7 @@ namespace MattScripts {
 		// When the player first enters the area, the event will occur accordingly
 		private void OnTriggerEnter(Collider other)
 		{
-            if(other.CompareTag("Player") && hasActivated == false && GameManager.Instance.CurrentState == GameStates.NORMAL)
+            if(other.CompareTag("Player") && hasActivated == false)
             {
                 if(activateByInteract)
                 {
@@ -52,7 +52,7 @@ namespace MattScripts {
 		// When the player is in this area, the event will trigger accordingly
 		private void OnTriggerStay(Collider other)
 		{
-            if(other.CompareTag("Player") && hasActivated == false && GameManager.Instance.CurrentState == GameStates.NORMAL)
+            if(other.CompareTag("Player") && hasActivated == false)
             {
                 // If the player is within the trigger still, but the UI hasn't activated, we make sure we activate it
                 if(activateByInteract == true && interactIconUI.activeInHierarchy == false)
@@ -73,7 +73,7 @@ namespace MattScripts {
         // When the player leaves the area, the event will react accordingly
 		private void OnTriggerExit(Collider other)
 		{
-            if(other.CompareTag("Player") && hasActivated == false && GameManager.Instance.CurrentState == GameStates.NORMAL)
+            if(other.CompareTag("Player") && hasActivated == false)
             {
                 if(activateByInteract)
                 {
