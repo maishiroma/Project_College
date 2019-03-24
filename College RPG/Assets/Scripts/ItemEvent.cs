@@ -8,23 +8,22 @@ namespace MattScripts {
     public class ItemEvent : BaseEvent
     {
         [Header("Sub Variables")]
-        public ScriptableObject itemToGive;
-
+        public ScriptableObject itemToGive; // The object that this event will grant to the player
         [Range(-99,99)]
         public int quantity = 1;        // How much is granted/taken from the player?
 
+		// Private variables
+		private PlayerInventory playerInventory;
+
         // Verfiies if the quantity is a valid number
-		private void OnValidate()
-		{
+        private void OnValidate()
+        {
             if(quantity == 0)
             {
                 Debug.LogWarning("Quantity cannot be 0! Setting it to 1...");
                 quantity = 1;
             }
-		}
-
-		// Private variables
-		private PlayerInventory playerInventory;
+        }
 
         // Saves a reference of the player to the script
 		public override void EventSetup()
@@ -35,9 +34,10 @@ namespace MattScripts {
 		// Upon being enabled, this event will grant the player the specific object
 		public override void EventOutcome()
         {
-            // TODO: When we have other item types, we need to play out the specific cast and methods
             if(itemToGive is ItemData)
             {
+                // We add the new item to the player inventory.
+                // Depending on the amount of said item, we will increment or decrement from the player's inventory.
                 InventoryItem newItem = new InventoryItem((ItemData)itemToGive, quantity);
                 if(Mathf.Sign(quantity) < 0)
                 {
@@ -53,6 +53,7 @@ namespace MattScripts {
             else if(itemToGive is GearData)
             {
                 // We add the new gear to the inventory
+                // Depending on the amount of said item, we will increment or decrement from the player's inventory.
                 InventoryGear newGear = new InventoryGear((GearData)itemToGive, quantity);
                 if(Mathf.Sign(quantity) < 0)
                 {
@@ -82,11 +83,15 @@ namespace MattScripts {
         }
 
         // Upon activation, we play out this event
+        // Once activated, this event will not be able to be replayed
 		private void OnEnable()
 		{
-            EventSetup();
-            EventOutcome();
-            hasActivated = true;
+            if(hasActivated == false)
+            {
+                EventSetup();
+                EventOutcome();
+                hasActivated = true;
+            }
 		}
 	}   
 }

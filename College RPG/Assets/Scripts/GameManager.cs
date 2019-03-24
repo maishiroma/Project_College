@@ -94,6 +94,11 @@ namespace MattScripts {
         {
             if(scene.buildIndex != 1)
             {
+                // If for some reason, the gamemanager says its in a normal mode upon loading a scene, we tell it that it is traveling.
+                if(currentState == GameStates.NORMAL)
+                {
+                    currentState = GameStates.TRAVEL;
+                }
                 StartCoroutine(SetUpScene(scene.buildIndex));
             }
         }
@@ -132,7 +137,6 @@ namespace MattScripts {
                 yield return new WaitForSeconds(0.5f);
 
                 // We enable the player to move and the game resumes
-                player.GetComponent<CharacterController>().EnableController();
                 CurrentState = GameStates.NORMAL;
             }
             else

@@ -4041,12 +4041,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pauseMenuObject: {fileID: 1039115009}
+  scrollInput: Vertical
   pauseInput: Pause
   selectInput: Interact
   cancelInput: Cancel
+  scrollDelay: 0.3
   selectChoiceHighlight: {fileID: 11400000, guid: 69a525efa7e6472eab268f6ea605f06e,
     type: 2}
-  currentState: 0
 --- !u!4 &2038616105
 Transform:
   m_ObjectHideFlags: 0

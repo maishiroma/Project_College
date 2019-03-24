@@ -24,19 +24,22 @@ namespace MattScripts {
 
         [Header("General Variables")]
         public GameObject pauseMenuObject;
+        public string scrollInput = "Vertical";
         public string pauseInput = "Pause";
         public string selectInput = "Interact";
         public string cancelInput = "Cancel";
+        [Range(0.1f,0.5f)]
+        public float scrollDelay = 0.3f;
 
         [Header("UI Variables")]
         public TMP_ColorGradient selectChoiceHighlight;                 // Reference to the ColorGradiant used to showcase which text the player has selected
 
         // Private Variables
-        [SerializeField]
         private MenuStates currentState = MenuStates.HIDDEN;
         private Stack<int> prevIndexMenus;                              // Used to save the previous index spaces when navigating menus
         private int currentMenuIndex = 0;                               // The current menu index that we are selecting
         private int prevSizeOfStack = 0;                                // Used to back the player out of a sub menu
+        private bool hasScrolled = false;
 
         private Transform currentMenuParent = null;                     // The current menu item that contains the list of options
 
@@ -61,7 +64,7 @@ namespace MattScripts {
 
             playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
 
-            StartCoroutine(HideMenu());
+            pauseMenuObject.transform.localScale = new Vector3(0.1f,0.1f,0.1f);
 		}
 
 		// Checks for the player input depending on the specific states
@@ -90,25 +93,37 @@ namespace MattScripts {
             if(currentState != MenuStates.HIDDEN)
             {
                 // Handles moving the player input up and down when the player is selecting an option
-                if(Input.GetKeyDown(KeyCode.W) && currentMenuIndex > 0 && CheckIfOptionIsValid(currentMenuIndex - 1))
+                if(Input.GetAxis(scrollInput) > 0f && currentMenuIndex > 0 && CheckIfOptionIsValid(currentMenuIndex - 1))
                 {
-                    ChangeSelectedText(currentMenuIndex, currentMenuIndex - 1);
-                    currentMenuIndex--;
-                    UpdateMenuContext();
+                    // We delay the scroll so that it is easier to navigate the menus
+                    if(hasScrolled == false)
+                    {
+                        ChangeSelectedText(currentMenuIndex, currentMenuIndex - 1);
+                        currentMenuIndex--;
+                        UpdateMenuContext();
+                        hasScrolled = true;
+                        Invoke("ResetScroll", scrollDelay);
+                    }
                 }
-                else if(Input.GetKeyDown(KeyCode.S) && currentMenuIndex + 1 < currentMenuParent.childCount && CheckIfOptionIsValid(currentMenuIndex + 1))
+                else if(Input.GetAxis(scrollInput) < 0f && currentMenuIndex + 1 < currentMenuParent.childCount && CheckIfOptionIsValid(currentMenuIndex + 1))
                 {
-                    ChangeSelectedText(currentMenuIndex, currentMenuIndex + 1);
-                    currentMenuIndex++;
-                    UpdateMenuContext();
+                    // We delay the scroll so that it is easier to navigate the menus
+                    if(hasScrolled == false)
+                    {
+                        ChangeSelectedText(currentMenuIndex, currentMenuIndex + 1);
+                        currentMenuIndex++;
+                        UpdateMenuContext();
+                        hasScrolled = true;
+                        Invoke("ResetScroll", scrollDelay);
+                    }
                 }
 
                 // Logic for selecting a field
+                // Depending on what state we are in, we do various activities
                 // TODO: Need to implement the activity withing each field.
                 if(Input.GetButtonDown(selectInput))
                 {
                     Debug.Log("We selected " + currentMenuParent.GetChild(currentMenuIndex).GetComponent<TextMeshProUGUI>().text);
-                    // Depending on what state we are in, we do various activities
                     switch(currentState)
                     {
                         case MenuStates.MAIN:
@@ -149,6 +164,7 @@ namespace MattScripts {
                     }
                     break;
                 case MenuStates.GEAR:
+                    // We update the gear description
                     if(currentMenuIndex < playerInventory.GetGearInventorySize())
                     {
                         gearMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetGearAtIndex(currentMenuIndex).gearDescription;
@@ -249,7 +265,7 @@ namespace MattScripts {
             }
         }
 
-        // We initialize the item menu
+        // We set up all of the variables needed for the item menu
         private void InitializeItemMenu()
         {
             itemMenuObject.SetActive(true);
@@ -367,6 +383,12 @@ namespace MattScripts {
             return true;
         }
 
+        // Called in an invoke to allow for scrolling
+        private void ResetScroll()
+        {
+            hasScrolled = false;
+        }
+
         // Opens up the menu to the player
         private IEnumerator ShowMenu()
         {
@@ -378,9 +400,10 @@ namespace MattScripts {
             while(pauseMenuObject.transform.localScale.x < 1f)
             {
                 pauseMenuObject.transform.localScale += new Vector3(0.1f, 0.1f, 0.1f);
-                yield return new WaitForEndOfFrame();
+                yield return null;
             }
 
+            hasScrolled = false;
             currentState = MenuStates.MAIN;
             yield return null;
         }
@@ -391,13 +414,14 @@ namespace MattScripts {
             // Right now, we just increase/decrease the size
             currentState = MenuStates.LOADING;
 
-            while(pauseMenuObject.transform.localScale.x > 0f)
+            while(pauseMenuObject.transform.localScale.x > 0.1f)
             {
                 pauseMenuObject.transform.localScale -= new Vector3(0.1f, 0.1f, 0.1f);
-                yield return new WaitForEndOfFrame();
+                yield return null;
             }
 
             // And then we stop showing the menu entirely
+            hasScrolled = false;
             pauseMenuObject.SetActive(false);
             currentState = MenuStates.HIDDEN;
             GameManager.Instance.CurrentState = GameStates.NORMAL;
@@ -405,4 +429,3 @@ namespace MattScripts {
         }
 	}
 }
-

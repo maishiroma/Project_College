@@ -17,11 +17,12 @@ namespace MattScripts
     [CreateAssetMenu(fileName = "New Gear Data", menuName = "Custom Data/Gear")]
     public class GearData : ScriptableObject {
 
-        public Sprite gearSprite;
-
-        [Header("General Variables")]
         public GearType typeOfGear;
+
+        [Header("Visual Variables")]
+        public Sprite gearSprite;
         public string gearName;
+        [TextArea(1,4)]
         public string gearDescription;
 
         [Header("Gear Specific")]
