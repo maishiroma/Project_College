@@ -29,5 +29,27 @@ namespace MattScripts
         public ItemType itemType;
         [Range(1,9999)]
         public int itemAmount;
+
+        // Compares to see if two ItemDatas are the same
+		public override bool Equals(object other)
+		{
+            ItemData compareTo = (ItemData)other;
+
+            if(compareTo.itemSprite == itemSprite &&
+               compareTo.itemName == itemName && 
+               compareTo.itemDescription == itemDescription && 
+               compareTo.itemType == itemType && 
+               compareTo.itemAmount == itemAmount)
+            {
+                return true;
+            }
+            return false;
+		}
+
+        // Required when overriding Equals
+		public override int GetHashCode()
+		{
+            return base.GetHashCode();
+		}
     }   
 }

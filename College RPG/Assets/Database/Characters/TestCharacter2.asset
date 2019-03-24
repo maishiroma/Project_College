@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14dd230d1b28d4c9791fba7b156033ab, type: 3}
+  m_Name: TestCharacter2
+  m_EditorClassIdentifier: 
+  characterName: Dummy2
+  characterLevel: 10
+  currHealthPoints: 200
+  maxHealthPoints: 200
+  currSkillPoints: 150
+  maxSkillPoints: 150
+  baseAttack: 70
+  baseDefense: 50
+  demonData: {fileID: 11400000, guid: ef60a4ce5c7dc4782b1ce3031ac9abb5, type: 2}
+  attackList:
+  - {fileID: 11400000, guid: 01f0a33523ceb4e6b8e3da583226eadf, type: 2}
