@@ -90,7 +90,7 @@ namespace MattScripts {
             }
 
             // If we are NOT hidden, we enact on the rest of the pause menu logic
-            if(currentState != MenuStates.HIDDEN)
+            if(currentState != MenuStates.HIDDEN && currentState != MenuStates.LOADING)
             {
                 // Handles moving the player input up and down when the player is selecting an option
                 if(Input.GetAxis(scrollInput) > 0f && currentMenuIndex > 0 && CheckIfOptionIsValid(currentMenuIndex - 1))
