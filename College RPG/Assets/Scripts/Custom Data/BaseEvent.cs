@@ -32,7 +32,7 @@ namespace MattScripts {
 		// When the player first enters the area, the event will occur accordingly
 		private void OnTriggerEnter(Collider other)
 		{
-            if(other.CompareTag("Player") && hasActivated == false)
+            if(other.CompareTag("Player") && hasActivated == false && GameManager.Instance.CurrentState != GameStates.MENU)
             {
                 if(activateByInteract)
                 {
@@ -54,18 +54,30 @@ namespace MattScripts {
 		{
             if(other.CompareTag("Player") && hasActivated == false)
             {
-                // If the player is within the trigger still, but the UI hasn't activated, we make sure we activate it
-                if(activateByInteract == true && interactIconUI.activeInHierarchy == false)
+                // If we are in the menu, we do NOT allow for the player to active the event
+                if(GameManager.Instance.CurrentState != GameStates.MENU)
                 {
-                    interactIconUI.SetActive(true);
-                }
+                    // If the player is within the trigger still, but the UI hasn't activated, we make sure we activate it
+                    if(activateByInteract == true && interactIconUI.activeInHierarchy == false)
+                    {
+                        interactIconUI.SetActive(true);
+                    }
 
-                if(activateByInteract && Input.GetKeyDown(interactKey))
+                    if(activateByInteract && Input.GetKeyDown(interactKey))
+                    {
+                        // Check if the player has hit the approperiate button and starts the event accordingly
+                        objectToInteract.SetActive(true);
+                        EventSetup();
+                        hasActivated = true;
+                    }
+                }
+                else
                 {
-                    // Check if the player has hit the approperiate button and starts the event accordingly
-                    objectToInteract.SetActive(true);
-                    EventSetup();
-                    hasActivated = true;
+                    // We turn off the interact icon if we are in the menu
+                    if(activateByInteract == true && interactIconUI.activeInHierarchy == true)
+                    {
+                        interactIconUI.SetActive(false);
+                    }
                 }
             }
 		}
@@ -75,7 +87,7 @@ namespace MattScripts {
 		{
             if(other.CompareTag("Player") && hasActivated == false)
             {
-                if(activateByInteract)
+                if(activateByInteract == true)
                 {
                     // Remove the HUD for interacting with this
                     interactIconUI.SetActive(false);

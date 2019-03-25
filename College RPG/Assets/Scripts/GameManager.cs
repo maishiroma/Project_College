@@ -12,10 +12,10 @@ namespace MattScripts {
 
     // These determine what the game is currently doing, and each state will invoke different actions accordingly
     public enum GameStates {
-        NORMAL,
-        EVENT,
-        TRAVEL,
-        MENU
+        NORMAL,     // The player has control and is in the main overworld
+        EVENT,      // The player is in a scripted event, whether it is dialogue or a cutscene
+        TRAVEL,     // The player is fast traveling to another location
+        MENU        // The player is in the Pause Menu
     }
 
     public class GameManager : MonoBehaviour {
