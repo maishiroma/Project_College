@@ -44,6 +44,8 @@ namespace MattScripts
         [Space]
         [TextArea(1,3)]
         public string attackDescription;
+
+        [Tooltip("The animation that plays out when this move is performed.")]
         public Animation attackAnimation;
 
         [Header("Attack Properties")]
@@ -52,8 +54,10 @@ namespace MattScripts
 
         [Space]
         [Range(0,9999)]
+        [Tooltip("How much HP/SP does this attack use up?")]
         public int attackCost;
         [Range(0,9999)]
+        [Tooltip("The base power of this attack.")]
         public int attackPower;
     }   
 }

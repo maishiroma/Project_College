@@ -11,9 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3799099b2fa09413d881fad0d01ed48c, type: 3}
   m_Name: TestDemon
   m_EditorClassIdentifier: 
-  demonSprite: {fileID: 0}
   demonName: Bobobob
-  demonLevel: 10
   phyAttackStat: 10
   phyDefenseStat: 14
   spAttackStat: 20
@@ -21,3 +19,6 @@ MonoBehaviour:
   spdStat: 5
   luckStat: 7
   affinityArray: 00000000000000000000000000000000000000000000000000000000
+  attackList:
+  - {fileID: 11400000, guid: f0dffe808e3194c168511e344046e489, type: 2}
+  - {fileID: 11400000, guid: 01f0a33523ceb4e6b8e3da583226eadf, type: 2}

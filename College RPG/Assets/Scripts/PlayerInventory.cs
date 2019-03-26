@@ -25,7 +25,7 @@ namespace MattScripts {
     [System.Serializable]
     public class InventoryGear {
         public GearData specifiedGear;
-        public int quantity;            // How much of this one item is in the list?
+        public int quantity = 0;            // How much of this one item is in the list?
 
         public InventoryGear(GearData newGear, int quantity)
         {
@@ -39,10 +39,20 @@ namespace MattScripts {
     public class InventoryParty {
         public CharacterData specifiedCharacter;
 
+        public int characterLevel = 1;    // All of these values are used in leveling up and maintaining a copy of the original data
+        public int currentHealthPoints = 0;
+        public int currentSkillPoints = 0;
+
         public InventoryParty(CharacterData newCharacter)
         {
             this.specifiedCharacter = newCharacter;
+
+            this.currentHealthPoints = newCharacter.maxHealthPoints;
+            this.currentSkillPoints = newCharacter.maxSkillPoints;
         }
+
+        // TODO: Need to make a level up function that augments the player's stats.
+        // TODO: Need to have a way to dynamically calculate the player's stats during battle.
     }
 
     // The object that encapsulates links in a list
@@ -50,10 +60,14 @@ namespace MattScripts {
     public class InventoryLink {
         public LinkData specifiedLink;
 
+        public int linkLevel = 1;
+
         public InventoryLink(LinkData newLink)
         {
             this.specifiedLink = newLink;
         }
+
+        // TODO: Need to make a function that levels up links
     }
 
     public class PlayerInventory : MonoBehaviour {

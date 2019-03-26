@@ -12,23 +12,11 @@ namespace MattScripts
 
         [Header("Visuals")]
         public Sprite enemySprite;
-
-        [Space]
         public string enemyName;
 
         [Header("Stats")]
-        [Range(1,100)]
-        public int enemyLevel;
-
-        [Space]
-        [Range(1,15000)]
-        public int currHealthPoints;
         [Range(1,15000)]
         public int maxHealthPoints;
-
-        [Space]
-        [Range(1,15000)]
-        public int currSkillPoints;
         [Range(1,15000)]
         public int maxSkillPoints;
 
@@ -76,6 +64,7 @@ namespace MattScripts
         };
 
         [Header("External References")]
+        [Tooltip("All of the attacks the enemy can have.")]
         public List<AttackData> attackList = new List<AttackData>();
     }   
 }
