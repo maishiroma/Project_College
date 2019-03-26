@@ -14,6 +14,6 @@ MonoBehaviour:
   linkName: The Wingnut
   linkDescription: When you use this, you feel really...weird
   linkType: 15
-  linkLevel: 5
   linkDemon: {fileID: 0}
-  linkAttacks: []
+  linkAttacks:
+  - {fileID: 0}

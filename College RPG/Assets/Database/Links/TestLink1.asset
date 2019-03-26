@@ -14,6 +14,6 @@ MonoBehaviour:
   linkName: The Weirdo
   linkDescription: Using this will make you wonder, what is the meaning?
   linkType: 1
-  linkLevel: 1
   linkDemon: {fileID: 0}
-  linkAttacks: []
+  linkAttacks:
+  - {fileID: 0}

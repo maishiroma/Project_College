@@ -11,16 +11,9 @@ namespace MattScripts {
     public class DemonData : ScriptableObject {
 
         [Header("Visuals")]
-        public Sprite demonSprite;
-
-        [Space]
         public string demonName;
 
         [Header("Stats")]
-        [Range(1,100)]
-        public int demonLevel;
-
-        [Space]
         [Range(1,9999)]
         public int phyAttackStat;
         [Range(1,9999)]
@@ -62,5 +55,8 @@ namespace MattScripts {
             AffinityValues.NORMAL, 
             AffinityValues.NORMAL
         };
+
+        [Tooltip("A list of all of the attacks the demon can utilize.")]
+        public List<AttackData> attackList = new List<AttackData>();
     }
 }

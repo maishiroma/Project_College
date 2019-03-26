@@ -27,7 +27,9 @@ namespace MattScripts
 
         [Header("Item Properties")]
         public ItemType itemType;
+
         [Range(1,9999)]
+        [Tooltip("How much HP/SP will this restore? If this is a key item, this value is ignored.")]
         public int itemAmount;
 
         // Compares to see if two ItemDatas are the same

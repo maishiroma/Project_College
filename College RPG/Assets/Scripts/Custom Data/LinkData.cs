@@ -39,11 +39,12 @@ namespace MattScripts
 
         [Header("Link Properties")]
         public LinkType linkType;
-        [Range(0,10)]
-        public int linkLevel;
 
         [Header("External References")]
+        [Tooltip("The demon that is associtated with this link. This demon will have unique affinires and stats to go with this.")]
         public DemonData linkDemon;
+
+        [Tooltip("The unique attacks that come with this link.")]
         public List<AttackData> linkAttacks = new List<AttackData>();
     }   
 }

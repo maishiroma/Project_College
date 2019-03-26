@@ -11,9 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3799099b2fa09413d881fad0d01ed48c, type: 3}
   m_Name: TestDemon2
   m_EditorClassIdentifier: 
-  demonSprite: {fileID: 0}
   demonName: Wumbo
-  demonLevel: 1
   phyAttackStat: 23
   phyDefenseStat: 11
   spAttackStat: 123
@@ -21,3 +19,6 @@ MonoBehaviour:
   spdStat: 1
   luckStat: 1
   affinityArray: 01000000010000000100000001000000010000000100000001000000
+  attackList:
+  - {fileID: 11400000, guid: f8ed17462fd6048998de40efb8612990, type: 2}
+  - {fileID: 11400000, guid: 8a5e8b3968c9447b184dab83944a6e06, type: 2}

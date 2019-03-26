@@ -14,18 +14,8 @@ namespace MattScripts
         public string characterName;
 
         [Header("Stats")]
-        [Range(1,100)]
-        public int characterLevel;
-
-        [Space]
-        [Range(0,9999)]
-        public int currHealthPoints;
         [Range(0,9999)]
         public int maxHealthPoints;
-
-        [Space]
-        [Range(0,9999)]
-        public int currSkillPoints;
         [Range(0,9999)]
         public int maxSkillPoints;
 
@@ -36,8 +26,10 @@ namespace MattScripts
         public int baseDefense;
 
         [Header("External References")]
+        [Tooltip("The associated Demon with this Character. This will augment and base the character's stats, affinities, and attacks.")]
         public DemonData demonData;
-        public List<AttackData> attackList = new List<AttackData>();
+
+        [Tooltip("An array of all of the gear that the player has. These will also augment the character's stats.")]
         public GearData[] equippedGear = new GearData[3];
     }   
 }
