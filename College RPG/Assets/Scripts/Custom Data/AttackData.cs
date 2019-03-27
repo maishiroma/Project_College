@@ -29,6 +29,7 @@ namespace MattScripts
     // Lists out all of the potental ways an attack can be received
     public enum AffinityValues {
         NORMAL,
+        WEAK,
         RESISTANT,
         NULL,
         ABSORB,
