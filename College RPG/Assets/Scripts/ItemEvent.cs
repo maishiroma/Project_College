@@ -49,6 +49,7 @@ namespace MattScripts {
                     Debug.Log("Gave player " + newItem.specifiedItem.itemName);
                     playerInventory.AddToInventory(newItem);
                 }
+                isFinished = true;
             }
             else if(itemToGive is GearData)
             {
@@ -65,6 +66,7 @@ namespace MattScripts {
                     Debug.Log("Gave player " + newGear.specifiedGear.gearName);
                     playerInventory.AddToInventory(newGear);
                 }
+                isFinished = true;
             }
             else if(itemToGive is CharacterData)
             {
@@ -72,6 +74,7 @@ namespace MattScripts {
                 InventoryParty newCharacter = new InventoryParty((CharacterData)itemToGive);
                 Debug.Log("Added " + newCharacter.specifiedCharacter.characterName + " to party.");
                 playerInventory.AddToInventory(newCharacter);
+                isFinished = true;
             }
             else if(itemToGive is LinkData)
             {
@@ -79,6 +82,7 @@ namespace MattScripts {
                 InventoryLink newLink = new InventoryLink((LinkData)itemToGive);
                 Debug.Log("Added " + newLink.specifiedLink.linkName + " to inventory.");
                 playerInventory.AddToInventory(newLink);
+                isFinished = true;
             }
         }
 

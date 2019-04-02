@@ -22,11 +22,15 @@ namespace MattScripts {
         public GameObject objectToInteract;
 
         // Protected Variables
-        protected bool hasActivated;
+        protected bool hasActivated;        // Set to true when the event is triggered
+        protected bool isFinished;          // Set to true when the event is done
 
         // Getters
         public bool HasActivated {
             get {return hasActivated;}
+        }
+        public bool IsFinished {
+            get {return isFinished;}
         }
 
 		// When the player first enters the area, the event will occur accordingly
@@ -114,6 +118,7 @@ namespace MattScripts {
                 interactIconUI.SetActive(false);
                 objectToInteract.SetActive(false);
                 hasActivated = false;
+                isFinished = false;
             }
         }
 	

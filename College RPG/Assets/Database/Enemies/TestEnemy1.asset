@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b32e1b314eea45549b7eb6bd7f95eeb, type: 3}
+  m_Name: TestEnemy1
+  m_EditorClassIdentifier: 
+  enemySprite: {fileID: 0}
+  enemyName: Dummy Dude
+  maxHealthPoints: 100
+  maxSkillPoints: 100
+  phyAttackStat: 10
+  phyDefenseStat: 10
+  spAttackStat: 10
+  spDefenseStat: 10
+  spdStat: 5
+  luckStat: 3
+  affinityArray: 00000000000000000000000000000000000000000000000000000000
+  attackList:
+  - {fileID: 11400000, guid: f0dffe808e3194c168511e344046e489, type: 2}
+  - {fileID: 11400000, guid: 01f0a33523ceb4e6b8e3da583226eadf, type: 2}

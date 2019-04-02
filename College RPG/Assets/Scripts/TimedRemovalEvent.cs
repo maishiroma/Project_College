@@ -18,6 +18,7 @@ namespace MattScripts {
 		// Starts up the behavior of this Script to delete the specified GameObject after X seconds
 		private void OnEnable()
         {
+            hasActivated = true;
             Invoke("EventOutcome", timeToRemove);
         }
 
@@ -37,13 +38,13 @@ namespace MattScripts {
         {
             if(shouldDeactivate)
             {
-                hasActivated = true;
                 objectToInteract.SetActive(false);
             }
             else
             {
                 Destroy(objectToInteract);
             }
+            isFinished = true;
         }
     }
 

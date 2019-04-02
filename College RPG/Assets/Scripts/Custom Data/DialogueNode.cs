@@ -169,7 +169,7 @@ namespace MattScripts {
         {
             if(CheckIfEventExists())
             {
-                return endEvent.HasActivated;   
+                return endEvent.IsFinished;   
             }
             return true;
         }

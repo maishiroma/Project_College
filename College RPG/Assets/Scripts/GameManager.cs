@@ -15,7 +15,8 @@ namespace MattScripts {
         NORMAL,     // The player has control and is in the main overworld
         EVENT,      // The player is in a scripted event, whether it is dialogue or a cutscene
         TRAVEL,     // The player is fast traveling to another location
-        MENU        // The player is in the Pause Menu
+        MENU,       // The player is in the Pause Menu
+        BATTLE      // The player is in a battle
     }
 
     public class GameManager : MonoBehaviour {

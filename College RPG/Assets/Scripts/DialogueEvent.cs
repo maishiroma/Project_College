@@ -140,12 +140,17 @@ namespace MattScripts {
             // If we have a cutscene associated with this dialogue, we do NOT reset this event or the game state
             // The reason is that the the cutscene itself will script when the cutscene is over
             // So unless we are a standalone dialogue, we do not reset the game state or this event
-            if(associatedCutscene == null)
+            if(endDialogueEvent.GetType() != typeof(TransitionArea))
             {
-                GameManager.Instance.CurrentState = GameStates.NORMAL;
-                Invoke("ResetEvent", 0.5f);
+                // NOTE that if we have a transition area, we do NOT allow it to reset the game state
+                if(associatedCutscene == null)
+                {
+                    GameManager.Instance.CurrentState = GameStates.NORMAL;
+                    Invoke("ResetEvent", 0.5f);
+                }
             }
             HideDialogueBox();
+            isFinished = true;
         }
 
 		// When called, will hide the dialogue box and pause the dialogue
@@ -305,7 +310,7 @@ namespace MattScripts {
             {
                 hasFinishedEvents = false;
                 listOfDialogue[currentDialogueId].ActivateEvent();
-                while(listOfDialogue[currentDialogueId].DialogueEvent.HasActivated == false)
+                while(listOfDialogue[currentDialogueId].DialogueEvent.IsFinished == false)
                 {
                     yield return null;
                 }
@@ -321,12 +326,14 @@ namespace MattScripts {
         {
             if(endDialogueEvent.HasActivated == false)
             {
+                HideDialogueBox();
                 endDialogueEvent.gameObject.SetActive(true);
-                yield return null;
+                while(endDialogueEvent.IsFinished == false)
+                {
+                    yield return null;
+                }
             }
-
             EventOutcome();
-            yield return null;
         }
     
         // Delays the current dialogue from showing immediatly. Used in tangent with a cutscene
