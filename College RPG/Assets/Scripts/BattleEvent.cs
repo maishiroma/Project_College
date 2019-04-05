@@ -16,10 +16,6 @@ namespace MattScripts {
         [Header("Sub Variables")]
         public List<EnemyData> listOfEnemiesInFight;
 
-        // Private Variables
-        private Vector3 origPlayerLocation;
-        private int origSceneIndex;
-
         // Upon activating, we start up the battle.
 		private void OnEnable()
 		{
@@ -33,10 +29,6 @@ namespace MattScripts {
         // We transition to the battle scene using the required component. 
 		public override void EventSetup()
 		{
-            // We save the original location (There's an issue with this, since the player warps using the GameManager. Need to reword?)
-            origPlayerLocation = GameManager.Instance.PlayerReference.transform.position;
-            origSceneIndex = SceneManager.GetActiveScene().buildIndex;
-
             DontDestroyOnLoad(gameObject);
 		}
 

@@ -38,8 +38,9 @@ GameObject:
   - component: {fileID: 54054296633926816}
   - component: {fileID: 136009327383899746}
   - component: {fileID: 95348791420602392}
+  - component: {fileID: 114056547764041236}
   m_Layer: 0
-  m_Name: TestEnemy
+  m_Name: TestCharacter
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -105,6 +106,18 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &114056547764041236
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1617868147046586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88613c936878d465aaead6ada9a6d6bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  battleData: {fileID: 0}
 --- !u!136 &136009327383899746
 CapsuleCollider:
   m_ObjectHideFlags: 1

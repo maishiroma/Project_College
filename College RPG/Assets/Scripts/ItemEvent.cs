@@ -41,12 +41,12 @@ namespace MattScripts {
                 InventoryItem newItem = new InventoryItem((ItemData)itemToGive, quantity);
                 if(Mathf.Sign(quantity) < 0)
                 {
-                    Debug.Log("Took away " + newItem.specifiedItem.itemName + " from player.");
+                    Debug.Log("Took away " + newItem.SpecifiedItem.itemName + " from player.");
                     playerInventory.RemoveItemFromInventory(newItem, quantity);
                 }
                 else
                 {
-                    Debug.Log("Gave player " + newItem.specifiedItem.itemName);
+                    Debug.Log("Gave player " + newItem.SpecifiedItem.itemName);
                     playerInventory.AddToInventory(newItem);
                 }
                 isFinished = true;
@@ -58,12 +58,12 @@ namespace MattScripts {
                 InventoryGear newGear = new InventoryGear((GearData)itemToGive, quantity);
                 if(Mathf.Sign(quantity) < 0)
                 {
-                    Debug.Log("Took away " + newGear.specifiedGear.gearName + " from player.");
+                    Debug.Log("Took away " + newGear.SpecifiedGear.gearName + " from player.");
                     playerInventory.RemoveGearFromInventory(newGear, quantity);
                 }
                 else
                 {
-                    Debug.Log("Gave player " + newGear.specifiedGear.gearName);
+                    Debug.Log("Gave player " + newGear.SpecifiedGear.gearName);
                     playerInventory.AddToInventory(newGear);
                 }
                 isFinished = true;
@@ -72,7 +72,7 @@ namespace MattScripts {
             {
                 // We add the new party member to the player's inventory
                 InventoryParty newCharacter = new InventoryParty((CharacterData)itemToGive);
-                Debug.Log("Added " + newCharacter.specifiedCharacter.characterName + " to party.");
+                Debug.Log("Added " + newCharacter.SpecifiedCharacter.characterName + " to party.");
                 playerInventory.AddToInventory(newCharacter);
                 isFinished = true;
             }
@@ -80,7 +80,7 @@ namespace MattScripts {
             {
                 // We add the new link to the player's inventory
                 InventoryLink newLink = new InventoryLink((LinkData)itemToGive);
-                Debug.Log("Added " + newLink.specifiedLink.linkName + " to inventory.");
+                Debug.Log("Added " + newLink.SpecifiedLink.linkName + " to inventory.");
                 playerInventory.AddToInventory(newLink);
                 isFinished = true;
             }

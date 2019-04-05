@@ -19,19 +19,31 @@ namespace MattScripts {
 
     public class BattleController : MonoBehaviour {
 
+        [Header("General Variables")]
+        public Transform[] partySpawnLocations;
+        public Transform[] enemySpawnLocations;
+
+        [Header("Prefabs")]
+        public GameObject characterPrefab;
+
         // Private Variables
         [SerializeField]
         private BattleStates currentState;
-        private GameObject[] orderOfAttacks;
+        private BattleEvent currentBattleEvent;
 
         // When the player goes into this scene, the game is set to start the battle
 		private void Start()
 		{
+            if(FindObjectOfType<BattleEvent>() != null)
+            {
+                currentBattleEvent = FindObjectOfType<BattleEvent>();
+            }
+
+            SpawnParty();
+            SpawnEnemies();
+
             currentState = BattleStates.START;
             GameManager.Instance.CurrentState = GameStates.BATTLE;
-
-            // TODO: Spawn in the player party and enemies and fill in their corresponding lists
-            // TODO: Find BattleEvent, and fill in the enemy details from there into here
 		}
 
         // On each frame, we run the corresponding logic depending on what state we are in.
@@ -56,6 +68,34 @@ namespace MattScripts {
         private void DetermineOrderOfAttacks()
         {
             // TODO: Compare the speed stats of the player's party with the enemy, ordering them in the list based on each other's speed
+        }
+
+        // Spawns the party into battle.
+        private void SpawnParty()
+        {
+            PlayerInventory playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
+
+            int currLocationIndex = 0;
+            for(int currIndex = 0; currIndex < playerInventory.GetPartyInvetorySize(); ++currIndex)
+            {
+                GameObject partyMember = Instantiate(characterPrefab, partySpawnLocations[currLocationIndex].position, Quaternion.identity);
+                partyMember.GetComponent<BattleStats>().battleData = playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter;
+                partyMember.GetComponent<BattleStats>().InitializeHPSP(playerInventory.GetInventoryCharacterAtIndex(currIndex).CurrentHealthPoints, playerInventory.GetInventoryCharacterAtIndex(currIndex).CurrentSkillPoints);
+                currLocationIndex++;
+            }
+        }
+
+        // Spawns in enemies from the event
+        private void SpawnEnemies()
+        {
+            int currSpawnIndex = 0;
+            foreach(EnemyData currentData in currentBattleEvent.listOfEnemiesInFight)
+            {
+                GameObject newEnemy = Instantiate(characterPrefab, enemySpawnLocations[currSpawnIndex].position, Quaternion.identity);
+                newEnemy.GetComponent<BattleStats>().battleData = currentData;
+                newEnemy.GetComponent<BattleStats>().InitializeHPSP(currentData.maxHealthPoints, currentData.maxSkillPoints);
+                currSpawnIndex++;
+            }
         }
 	}
 }

@@ -160,7 +160,7 @@ namespace MattScripts {
                     // We update the party description
                     if(currentMenuIndex < playerInventory.GetPartyInvetorySize())
                     {
-                        partyMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetCharacterAtIndex(currentMenuIndex).characterName;
+                        partyMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).SpecifiedCharacter.characterName;
                     }
                     break;
                 case MenuStates.GEAR:
@@ -298,7 +298,7 @@ namespace MattScripts {
             int currCharacterIndex = 0;
             while(currCharacterIndex < playerInventory.GetPartyInvetorySize())
             {
-                CharacterData currCharacter = playerInventory.GetCharacterAtIndex(currCharacterIndex);
+                CharacterData currCharacter = playerInventory.GetInventoryCharacterAtIndex(currCharacterIndex).SpecifiedCharacter;
                 currentMenuParent.GetChild(currCharacterIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
                 ++currCharacterIndex;
             }
