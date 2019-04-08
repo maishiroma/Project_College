@@ -30,6 +30,7 @@ namespace MattScripts {
         [SerializeField]
         private BattleStates currentState;
         private BattleEvent currentBattleEvent;
+        private BattleStats[] listOfAllCharacters;
 
         // When the player goes into this scene, the game is set to start the battle
 		private void Start()
@@ -41,6 +42,7 @@ namespace MattScripts {
 
             SpawnParty();
             SpawnEnemies();
+            listOfAllCharacters = DetermineOrderOfAttacks();
 
             currentState = BattleStates.START;
             GameManager.Instance.CurrentState = GameStates.BATTLE;
@@ -65,9 +67,24 @@ namespace MattScripts {
 		}
 
         // Determines the order of who goes first
-        private void DetermineOrderOfAttacks()
+        // First in array = fastest; last = slowest
+        // Uses insertion sort
+        private BattleStats[] DetermineOrderOfAttacks()
         {
-            // TODO: Compare the speed stats of the player's party with the enemy, ordering them in the list based on each other's speed
+            BattleStats[] newOrder = FindObjectsOfType<BattleStats>();
+            for(int compareIndex = 0; compareIndex < newOrder.Length; ++compareIndex)
+            {
+                for(int iteratorIndex = compareIndex + 1; iteratorIndex < newOrder.Length; ++iteratorIndex)
+                {
+                    if(newOrder[iteratorIndex].CompareSpeeds(newOrder[compareIndex]) == true)
+                    {
+                        BattleStats temp = newOrder[iteratorIndex];
+                        newOrder[iteratorIndex] = newOrder[compareIndex];
+                        newOrder[compareIndex] = temp;
+                    }
+                }
+            }
+            return newOrder;
         }
 
         // Spawns the party into battle.

@@ -16,7 +16,7 @@ MonoBehaviour:
   phyDefenseStat: 14
   spAttackStat: 20
   spDefenseStat: 10
-  spdStat: 5
+  spdStat: 10
   luckStat: 7
   affinityArray: 00000000000000000000000000000000000000000000000000000000
   attackList:

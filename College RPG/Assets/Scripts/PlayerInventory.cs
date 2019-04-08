@@ -183,6 +183,8 @@ namespace MattScripts {
             listOfGear = new List<InventoryGear>();
             listOfPartyMembers = new List<InventoryParty>();
             listOfLinks = new List<InventoryLink>();
+
+            // TODO: Make sure to add in one value for the party inventory representing the player
 		}
 
         // Adds an item to an inventory
@@ -313,29 +315,30 @@ namespace MattScripts {
             return false;
         }
 
-        // Returns the itemdata at the specified index point
+        // Returns the item at the specified index point
         // Returns null if it cannot find that item
-        public ItemData GetItemAtIndex(int index)
+        public InventoryItem GetItemAtIndex(int index)
         {
             if(index < listOfItems.Count && index >= 0)
             {
-                return listOfItems[index].SpecifiedItem;
+                return listOfItems[index];
             }
             return null;
         }
 
-        // Returns the gearData at the specified index
+        // Returns the gear at the specified index
         // returns null if it cannot find that gear
-        public GearData GetGearAtIndex(int index)
+        public InventoryGear GetGearAtIndex(int index)
         {
             if(index < listOfGear.Count && index >= 0)
             {
-                return listOfGear[index].SpecifiedGear;
+                return listOfGear[index];
             }
             return null;
         }
 
-        // Returns the character inventory value
+        // Returns the character at the specified index
+        // returns null if it cannot find that character
         public InventoryParty GetInventoryCharacterAtIndex(int index)
         {
             if(index < listOfPartyMembers.Count && index >= 0)
@@ -345,13 +348,13 @@ namespace MattScripts {
             return null;
         }
 
-        // Returns the link data at X index
+        // Returns the link at X index
         // Returns null if the index is invalid
-        public LinkData GetLinkAtIndex(int index)
+        public InventoryLink GetLinkAtIndex(int index)
         {
             if(index < listOfLinks.Count && index >= 0)
             {
-                return listOfLinks[index].SpecifiedLink;
+                return listOfLinks[index];
             }
             return null;
         }

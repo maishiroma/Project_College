@@ -153,7 +153,7 @@ namespace MattScripts {
                     // We update the item description
                     if(currentMenuIndex < playerInventory.GetItemInventorySize())
                     {
-                        itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemAtIndex(currentMenuIndex).itemDescription;
+                        itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemAtIndex(currentMenuIndex).SpecifiedItem.itemDescription;
                     }
                     break;
                 case MenuStates.PARTY:
@@ -167,14 +167,14 @@ namespace MattScripts {
                     // We update the gear description
                     if(currentMenuIndex < playerInventory.GetGearInventorySize())
                     {
-                        gearMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetGearAtIndex(currentMenuIndex).gearDescription;
+                        gearMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetGearAtIndex(currentMenuIndex).SpecifiedGear.gearDescription;
                     }
                     break;
                 case MenuStates.LINK:
                     // We update the link description
                     if(currentMenuIndex < playerInventory.GetLinkInventorySize())
                     {
-                        linkMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetLinkAtIndex(currentMenuIndex).linkDescription;
+                        linkMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetLinkAtIndex(currentMenuIndex).SpecifiedLink.linkDescription;
                     }
                     break;
             }
@@ -275,7 +275,7 @@ namespace MattScripts {
             int currItemIndex = 0;
             while(currItemIndex < playerInventory.GetItemInventorySize())
             {
-                ItemData currItem = playerInventory.GetItemAtIndex(currItemIndex);
+                ItemData currItem = playerInventory.GetItemAtIndex(currItemIndex).SpecifiedItem;
                 currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = currItem.itemName;
                 ++currItemIndex;
             }
@@ -321,7 +321,7 @@ namespace MattScripts {
             int currGearIndex = 0;
             while(currGearIndex < playerInventory.GetGearInventorySize())
             {
-                GearData currGear = playerInventory.GetGearAtIndex(currGearIndex);
+                GearData currGear = playerInventory.GetGearAtIndex(currGearIndex).SpecifiedGear;
                 currentMenuParent.GetChild(currGearIndex).GetComponent<TextMeshProUGUI>().text = currGear.gearName;
                 ++currGearIndex;
             }
@@ -344,7 +344,7 @@ namespace MattScripts {
             int currLinkIndex = 0;
             while(currLinkIndex < playerInventory.GetLinkInventorySize())
             {
-                LinkData currCharacter = playerInventory.GetLinkAtIndex(currLinkIndex);
+                LinkData currCharacter = playerInventory.GetLinkAtIndex(currLinkIndex).SpecifiedLink;
                 currentMenuParent.GetChild(currLinkIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.linkName;
                 ++currLinkIndex;
             }
