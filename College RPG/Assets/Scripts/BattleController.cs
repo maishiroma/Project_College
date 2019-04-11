@@ -114,5 +114,5 @@ namespace MattScripts {
                 currSpawnIndex++;
             }
         }
-	}
+    }
 }
