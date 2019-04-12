@@ -9,15 +9,19 @@ using TMPro;
 namespace MattScripts {
 
     public enum BattleMenuStates {
-        HIDDEN,
-        MAIN,
-        ATTACK,
-        SPECIAL,
-        ITEM,
-        TARGET
+        HIDDEN,             // The menu is hidden
+        MAIN,               // The user is viewing the main attack menu
+        ATTACK_TARGET,      // The user is selecting a target to do a normal attack on
+        SPECIAL,            // The user is selecting a special attack
+        SPECIAL_TARGET,     // The user is selecting a target to do the special attack
+        ITEM,               // The user is selecting an item
+        ITEM_TARGET,        // The user is selecting a target to use the item on
     }
 
+    [RequireComponent(typeof(BattleController))]
     public class BattleUIController : MonoBehaviour {
+
+        public BattleController battleController;                       // A hard ref to the current battle controller
 
         [Header("Input Variables")]
         public string selectInput = "Interact";
@@ -94,25 +98,17 @@ namespace MattScripts {
                 }
 
                 // Logic for selecting a field
-                // Depending on what state we are in, we do various activities
-                // TODO: Need to implement the activity withing each field.
                 if(Input.GetButtonDown(selectInput))
                 {
                     Debug.Log("We selected " + currentMenuParent.GetChild(currentMenuIndex).GetComponent<TextMeshProUGUI>().text);
-                    switch(currentState)
-                    {
-                        case BattleMenuStates.ATTACK:
-                            break;
-                        case BattleMenuStates.SPECIAL:
-                            break;
-                        case BattleMenuStates.ITEM:
-                            break;
-                    }
+                    SelectOption();
+                    UpdateMenuContext();
                 }
+                // Logic for returning to the last selected item
                 else if(Input.GetButtonDown(cancelInput))
                 {
-                    // We return to the last selected itm
                     ReturnToPreviousOption();
+                    UpdateMenuContext();
                 }
             }
         }
@@ -120,11 +116,12 @@ namespace MattScripts {
         // Depending on what menu we are in, we update what is currently displayed after we scroll on something
         private void UpdateMenuContext()
         {
+            TextMeshProUGUI descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
+
             switch(currentState)
             {
                 case BattleMenuStates.MAIN:
                     // Updates the description box based on the highlighted action
-                    TextMeshProUGUI descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
                     if(currentMenuIndex == 0)
                     {
                         descText.text = "Perform a standard attack on the selected enemy.";
@@ -138,7 +135,71 @@ namespace MattScripts {
                         descText.text = "Use a battle item to heal oneself or another party member.";
                     }
                     break;
+                case BattleMenuStates.ATTACK_TARGET:
+                    descText.text = "Select a target.";
+                    break;
+                case BattleMenuStates.SPECIAL:
+                    // Shows a description of the target
+                    break;
+                case BattleMenuStates.ITEM:
+                    // Shows a description of the item
+                    break;
             }
+        }
+
+        // Depending what state we are in, we handle how to handle the menu logic from here after selecting something
+        private void SelectOption()
+        {
+            switch(currentState)
+            {
+                case BattleMenuStates.MAIN:
+                    // We change to the new menu and update the display
+                    if(currentMenuIndex == 0)
+                    {
+                        // We select the attack option
+                        currentState = BattleMenuStates.ATTACK_TARGET;
+                    }
+                    else if(currentMenuIndex == 1)
+                    {
+                        // We select the special option
+                        currentState = BattleMenuStates.SPECIAL;
+                    }
+                    else
+                    {
+                        // We select the item option
+                        currentState = BattleMenuStates.ITEM;
+                    }
+
+                    // We then make the sub menu visible
+                    currentMenuParent = battleUI.transform.GetChild(2);
+                    currentMenuParent.gameObject.SetActive(true);
+                    break;
+                case BattleMenuStates.ATTACK_TARGET:
+                    // We have confirmed an action to attack
+                    break;
+                case BattleMenuStates.SPECIAL:
+                    // We have confirmed what special attack we want to do 
+                    break;
+                case BattleMenuStates.SPECIAL_TARGET:
+                    // We have confirmed our target to hit our attack on
+                    break;
+                case BattleMenuStates.ITEM:
+                    // We confirmed what item to use
+                    break;
+                case BattleMenuStates.ITEM_TARGET:
+                    // We have confirmed who to use the item on
+                    break;
+            }
+
+            // All of this handles the logic for returning back to the first option
+            // We first save the previous index point and change the color of the text to be unselected
+            prevSizeOfStack = prevIndexMenus.Count;
+            prevIndexMenus.Push(currentMenuIndex);
+            ChangeSelectedText(currentMenuIndex, -1);
+
+            // And we then update the selection to that new menu.
+            currentMenuIndex = 0;
+            ChangeSelectedText(currentMenuIndex, 0);
         }
 
         // Depending on where we are, we hop back to the previous option
@@ -146,24 +207,30 @@ namespace MattScripts {
         {
             if(prevIndexMenus.Count > 0)
             {
-                // Right now, we do not have sub menus within menus, so we will be going back to the main menu
                 if(prevIndexMenus.Count - 1 == prevSizeOfStack)
                 {
+                    currentMenuParent.gameObject.SetActive(false);
+                    ChangeSelectedText(currentMenuIndex, -1);
+
                     switch(currentState)
                     {
-                        case BattleMenuStates.ATTACK:
-                            
-                            break;
-                        case BattleMenuStates.SPECIAL:
-                            break;
+                        case BattleMenuStates.ATTACK_TARGET:
                         case BattleMenuStates.ITEM:
+                        case BattleMenuStates.SPECIAL:
+                            currentMenuParent = battleUI.transform.GetChild(0);
+                            currentState = BattleMenuStates.MAIN;
+                            break;
+                        case BattleMenuStates.ITEM_TARGET:
+                            currentState = BattleMenuStates.ITEM;
+                            // TODO: Determine how to get back from selecting the target to selecting the item/move
+                            break;
+                        case BattleMenuStates.SPECIAL_TARGET:
+                            currentState = BattleMenuStates.SPECIAL;
+                            // TODO: Determine how to get back from selecting the target to selecting the item/move
                             break;
                     }
 
-                    ChangeSelectedText(currentMenuIndex, -1);
-                    currentMenuParent = battleUI.transform.GetChild(0);
                     currentMenuParent.gameObject.SetActive(true);
-                    currentState = BattleMenuStates.MAIN;
                 }
 
                 int newIndex = prevIndexMenus.Pop();

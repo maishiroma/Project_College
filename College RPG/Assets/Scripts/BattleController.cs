@@ -31,6 +31,25 @@ namespace MattScripts {
         private BattleStates currentState;
         private BattleEvent currentBattleEvent;
         private BattleStats[] listOfAllCharacters;
+        private int currentTurnOrder;
+
+        // Sets the current turn order
+        public int SetCurrentTurnOrder {
+            set {
+                if(value > listOfAllCharacters.Length)
+                {
+                    currentTurnOrder = 0;
+                }
+                else if(value < 0)
+                {
+                    currentTurnOrder = 0;
+                }
+                else
+                {
+                    currentTurnOrder = value;
+                }
+            }
+        }
 
         // When the player goes into this scene, the game is set to start the battle
 		private void Start()
@@ -43,6 +62,7 @@ namespace MattScripts {
             SpawnParty();
             SpawnEnemies();
             listOfAllCharacters = DetermineOrderOfAttacks();
+            currentTurnOrder = 0;
 
             currentState = BattleStates.START;
             GameManager.Instance.CurrentState = GameStates.BATTLE;
@@ -113,6 +133,16 @@ namespace MattScripts {
                 newEnemy.GetComponent<BattleStats>().InitializeHPSP(currentData.maxHealthPoints, currentData.maxSkillPoints);
                 currSpawnIndex++;
             }
+        }
+    
+        // Returns the current character that is in the turn order
+        public BattleStats GetCurrentCharacterInTurnOrder()
+        {
+            if(currentTurnOrder < listOfAllCharacters.Length)
+            {
+                return listOfAllCharacters[currentTurnOrder];
+            }
+            return null;
         }
     }
 }
