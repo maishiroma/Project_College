@@ -40,14 +40,16 @@ namespace MattScripts {
         private GameObject descriptionBox;                              // The box that is used to show the description of the command
         private GameObject actionBox;                                   // The box that is used to highlight an attack
         private GameObject commandBox;                                  // The box that contains all of the main menu commands
-        private GameObject subCommandBox;                               // The box that contains all of the sude commands
+        private GameObject subCommandBox;                               // The box that contains all of the sube commands
 
         private Transform currentMenuParent = null;                     // The current menu item that contains the list of options
 
         private Stack<int> prevIndexMenus;                              // Used to save the previous index spaces when navigating menus
         private int currentMenuIndex = 0;
-        private int prevSizeOfStack = 0;                                // Used to back the player out of a sub menu
         private bool hasScrolled = false;
+
+        private TextMeshProUGUI descText;                               // Hard refs to store for later usage
+        private PlayerInventory playerInventory;
 
         // We initialize the UI Controller
 		private void Start()
@@ -58,6 +60,7 @@ namespace MattScripts {
             descriptionBox = battleUI.transform.GetChild(1).gameObject;
             subCommandBox = battleUI.transform.GetChild(2).gameObject;
             actionBox = battleUI.transform.GetChild(3).gameObject;
+            descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
             currentMenuParent = commandBox.transform;
 
             currentState = BattleMenuStates.MAIN;
@@ -116,7 +119,11 @@ namespace MattScripts {
         // Depending on what menu we are in, we update what is currently displayed after we scroll on something
         private void UpdateMenuContext()
         {
-            TextMeshProUGUI descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
+            // If we do not have this saved at this point, we will save a reference to these.
+            if(playerInventory == null)
+            {
+                playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
+            }
 
             switch(currentState)
             {
@@ -136,13 +143,17 @@ namespace MattScripts {
                     }
                     break;
                 case BattleMenuStates.ATTACK_TARGET:
+                case BattleMenuStates.SPECIAL_TARGET:
                     descText.text = "Select a target.";
                     break;
+                case BattleMenuStates.ITEM_TARGET:
+                    descText.text = "Who to use this on?";
+                    break;
                 case BattleMenuStates.SPECIAL:
-                    // Shows a description of the target
+                    descText.text = ((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData).demonData.attackList[currentMenuIndex].attackDescription;
                     break;
                 case BattleMenuStates.ITEM:
-                    // Shows a description of the item
+                    descText.text = playerInventory.GetItemAtIndex(currentMenuIndex).SpecifiedItem.itemDescription;
                     break;
             }
         }
@@ -150,41 +161,51 @@ namespace MattScripts {
         // Depending what state we are in, we handle how to handle the menu logic from here after selecting something
         private void SelectOption()
         {
+            ChangeSelectedText(currentMenuIndex, -1);
             switch(currentState)
             {
                 case BattleMenuStates.MAIN:
-                    // We change to the new menu and update the display
+                    // We make the sub menu visible
+                    subCommandBox.SetActive(true);
+                    currentMenuParent = subCommandBox.transform.GetChild(0).GetChild(0);
+
+                    // We then update the display
                     if(currentMenuIndex == 0)
                     {
                         // We select the attack option
+                        FillEnemyTargetMenu();
                         currentState = BattleMenuStates.ATTACK_TARGET;
                     }
                     else if(currentMenuIndex == 1)
                     {
                         // We select the special option
+                        FillSubMenu((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData);
                         currentState = BattleMenuStates.SPECIAL;
                     }
                     else
                     {
                         // We select the item option
+                        FillSubMenu();
                         currentState = BattleMenuStates.ITEM;
                     }
-
-                    // We then make the sub menu visible
-                    currentMenuParent = battleUI.transform.GetChild(2);
-                    currentMenuParent.gameObject.SetActive(true);
                     break;
                 case BattleMenuStates.ATTACK_TARGET:
                     // We have confirmed an action to attack
                     break;
                 case BattleMenuStates.SPECIAL:
-                    // We have confirmed what special attack we want to do 
+                    // We have confirmed what special attack we want to do
+                    DeactivateSubMenuItems();
+                    FillEnemyTargetMenu();
+                    currentState = BattleMenuStates.SPECIAL_TARGET;
                     break;
                 case BattleMenuStates.SPECIAL_TARGET:
                     // We have confirmed our target to hit our attack on
                     break;
                 case BattleMenuStates.ITEM:
                     // We confirmed what item to use
+                    DeactivateSubMenuItems();
+                    FillPartyTargetMenu();
+                    currentState = BattleMenuStates.ITEM_TARGET;
                     break;
                 case BattleMenuStates.ITEM_TARGET:
                     // We have confirmed who to use the item on
@@ -193,9 +214,7 @@ namespace MattScripts {
 
             // All of this handles the logic for returning back to the first option
             // We first save the previous index point and change the color of the text to be unselected
-            prevSizeOfStack = prevIndexMenus.Count;
             prevIndexMenus.Push(currentMenuIndex);
-            ChangeSelectedText(currentMenuIndex, -1);
 
             // And we then update the selection to that new menu.
             currentMenuIndex = 0;
@@ -207,35 +226,90 @@ namespace MattScripts {
         {
             if(prevIndexMenus.Count > 0)
             {
-                if(prevIndexMenus.Count - 1 == prevSizeOfStack)
+                ChangeSelectedText(currentMenuIndex, -1);
+                DeactivateSubMenuItems();
+
+                switch(currentState)
                 {
-                    currentMenuParent.gameObject.SetActive(false);
-                    ChangeSelectedText(currentMenuIndex, -1);
-
-                    switch(currentState)
-                    {
-                        case BattleMenuStates.ATTACK_TARGET:
-                        case BattleMenuStates.ITEM:
-                        case BattleMenuStates.SPECIAL:
-                            currentMenuParent = battleUI.transform.GetChild(0);
-                            currentState = BattleMenuStates.MAIN;
-                            break;
-                        case BattleMenuStates.ITEM_TARGET:
-                            currentState = BattleMenuStates.ITEM;
-                            // TODO: Determine how to get back from selecting the target to selecting the item/move
-                            break;
-                        case BattleMenuStates.SPECIAL_TARGET:
-                            currentState = BattleMenuStates.SPECIAL;
-                            // TODO: Determine how to get back from selecting the target to selecting the item/move
-                            break;
-                    }
-
-                    currentMenuParent.gameObject.SetActive(true);
+                    case BattleMenuStates.ATTACK_TARGET:
+                    case BattleMenuStates.ITEM:
+                    case BattleMenuStates.SPECIAL:
+                        subCommandBox.gameObject.SetActive(false);
+                        currentMenuParent = battleUI.transform.GetChild(0);
+                        currentState = BattleMenuStates.MAIN;
+                        break;
+                    case BattleMenuStates.ITEM_TARGET:
+                        FillSubMenu();
+                        currentState = BattleMenuStates.ITEM;
+                        break;
+                    case BattleMenuStates.SPECIAL_TARGET:
+                        FillSubMenu((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData);
+                        currentState = BattleMenuStates.SPECIAL;
+                        break;
                 }
 
                 int newIndex = prevIndexMenus.Pop();
                 ChangeSelectedText(currentMenuIndex, newIndex);
                 currentMenuIndex = newIndex;
+            }
+        }
+
+        // We fill in all of the items in the sub menus
+        // An overloaded method
+        private void FillSubMenu()
+        {
+            int currIndex = 0;
+            while(currIndex < playerInventory.GetItemInventorySize())
+            {
+                ItemData currItem = playerInventory.GetItemAtIndex(currIndex).SpecifiedItem;
+                if(currItem.itemType != ItemType.KEY_ITEM)
+                {
+                    currentMenuParent.GetChild(currIndex).GetComponent<TextMeshProUGUI>().text = currItem.itemName;
+                    currentMenuParent.GetChild(currIndex).gameObject.SetActive(true);
+                    ++currIndex;
+                }
+            }
+        }
+        private void FillSubMenu(CharacterData currentPartyMember)
+        {
+            // We extract the attack data from the demon and fill in the menu
+            for(int currIndex = 0; currIndex < currentPartyMember.demonData.attackList.Count; ++currIndex)
+            {
+                AttackData currAttack = currentPartyMember.demonData.attackList[currIndex];
+                currentMenuParent.GetChild(currIndex).GetComponent<TextMeshProUGUI>().text = currAttack.attackName;
+                currentMenuParent.GetChild(currIndex).gameObject.SetActive(true);
+            }
+        }
+
+        // Fills in all of the available party members in the group
+        private void FillPartyTargetMenu()
+        {
+            int subMenuListIndex = 0;
+            for(int currCharacterIndex = 0; currCharacterIndex < battleController.GetSizeOfCharacterList(); ++currCharacterIndex)
+            {
+                if(battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData is CharacterData)
+                {
+                    CharacterData currCharacter = (CharacterData)battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData;
+                    currentMenuParent.GetChild(subMenuListIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
+                    currentMenuParent.GetChild(subMenuListIndex).gameObject.SetActive(true);
+                    subMenuListIndex++;
+                }
+            }
+        }
+
+        // Fills in all of the available enemies
+        private void FillEnemyTargetMenu()
+        {
+            int subMenuListIndex = 0;
+            for(int currCharacterIndex = 0; currCharacterIndex < battleController.GetSizeOfCharacterList(); ++currCharacterIndex)
+            {
+                if(battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData is EnemyData)
+                {
+                    EnemyData currCharacter = (EnemyData)battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData;
+                    currentMenuParent.GetChild(subMenuListIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.enemyName;
+                    currentMenuParent.GetChild(subMenuListIndex).gameObject.SetActive(true);
+                    subMenuListIndex++;
+                }
             }
         }
 
@@ -257,17 +331,34 @@ namespace MattScripts {
         // Checks if the new index point is a valid spot to move to
         private bool CheckIfOptionIsValid(int newIndex)
         {
-            if(currentMenuParent.GetChild(newIndex).GetComponent<TextMeshProUGUI>().text == "")
+            if(currentMenuParent.GetChild(newIndex).gameObject.activeInHierarchy == true)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         // Called in an invoke to allow for scrolling
         private void ResetScroll()
         {
             hasScrolled = false;
+        }
+    
+        // We deactivate all of the sub menu items for hiding
+        private void DeactivateSubMenuItems()
+        {
+            for(int currIndex = 0; currIndex < subCommandBox.transform.GetChild(0).GetChild(0).childCount; ++currIndex)
+            {
+                if(subCommandBox.transform.GetChild(0).GetChild(0).GetChild(currIndex).gameObject.activeInHierarchy == false)
+                {
+                    break;
+                }
+                else
+                {
+                    subCommandBox.transform.GetChild(0).GetChild(0).GetChild(currIndex).GetComponent<TextMeshProUGUI>().text = "";
+                    subCommandBox.transform.GetChild(0).GetChild(0).GetChild(currIndex).gameObject.SetActive(false);
+                }
+            }
         }
     }      
 }

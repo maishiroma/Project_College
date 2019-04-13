@@ -144,5 +144,24 @@ namespace MattScripts {
             }
             return null;
         }
+
+        // Gets a specific entity point in the character list
+        public BattleStats GetSpecificCharacterInBattle(int index)
+        {
+            if(index < 0 || index > listOfAllCharacters.Length)
+            {
+                return null;
+            }
+            else
+            {
+                return listOfAllCharacters[index];
+            }
+        }
+
+        // Returns the number of characters in battle
+        public int GetSizeOfCharacterList()
+        {
+            return listOfAllCharacters.Length;
+        }
     }
 }
