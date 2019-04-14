@@ -3310,7 +3310,7 @@ GameObject:
   - component: {fileID: 1313712762}
   - component: {fileID: 1313712764}
   m_Layer: 0
-  m_Name: BattleController
+  m_Name: BattleManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3327,6 +3327,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c66eb588d8504201a68c55506f5e286, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  battleUIController: {fileID: 1313712764}
   partySpawnLocations:
   - {fileID: 1420446010}
   enemySpawnLocations:

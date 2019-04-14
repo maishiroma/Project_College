@@ -15,13 +15,62 @@ namespace MattScripts {
 
         // Private variables
         private int currentHP;
+        private int maxHP;
         private int currentSP;
+        private int maxSP;
+
+        public int CurrentHP {
+            get { return currentHP; }
+            set {
+                if(value < 0)
+                {
+                    currentHP = 0;
+                }
+                else if(value > maxHP)
+                {
+                    currentHP = maxHP;
+                }
+                else
+                {
+                    currentHP = value;
+                }
+            }
+        }
+
+        public int CurrentSP {
+            get { return currentSP; }
+            set {
+                if(value < 0)
+                {
+                    currentSP = 0;
+                }
+                else if(value > maxSP)
+                {
+                    currentSP = maxSP;
+                }
+                else
+                {
+                    currentSP = value;
+                }
+            }
+        }
+
 
         // We initialize both HP/SP to what is passed
+        public void InitializeHPSP(int newHP, int newSP, int newMaxHP, int newMaxSP)
+        {
+            currentHP = newHP;
+            currentSP = newSP;
+            maxHP = newMaxHP;
+            maxSP = newMaxSP;
+        }
+        // This is an overloaded method that takes in the current HP/SP and sets those to the max
         public void InitializeHPSP(int newHP, int newSP)
         {
             currentHP = newHP;
             currentSP = newSP;
+            maxHP = newHP;
+            maxSP = newHP;
         }
 
         // We compare the speeds of the two datas that are passed in

@@ -9,7 +9,7 @@ using TMPro;
 namespace MattScripts {
 
     public enum BattleMenuStates {
-        HIDDEN,             // The menu is hidden
+        INACTIVE,           // The menu is hidden
         MAIN,               // The user is viewing the main attack menu
         ATTACK_TARGET,      // The user is selecting a target to do a normal attack on
         SPECIAL,            // The user is selecting a special attack
@@ -35,7 +35,7 @@ namespace MattScripts {
         public TMP_ColorGradient selectChoiceHighlight;                 // Reference to the ColorGradiant used to showcase which text the player has selected
 
         // Private variables
-        private BattleMenuStates currentState = BattleMenuStates.HIDDEN;
+        private BattleMenuStates currentState = BattleMenuStates.INACTIVE;
 
         private GameObject descriptionBox;                              // The box that is used to show the description of the command
         private GameObject actionBox;                                   // The box that is used to highlight an attack
@@ -50,6 +50,13 @@ namespace MattScripts {
 
         private TextMeshProUGUI descText;                               // Hard refs to store for later usage
         private PlayerInventory playerInventory;
+
+        public BattleMenuStates CurrentState {
+            get { return currentState; }
+            set {
+                currentState = value;
+            }
+        }
 
         // We initialize the UI Controller
 		private void Start()
@@ -72,7 +79,7 @@ namespace MattScripts {
 		private void Update()
         {
             // If we are NOT hidden, we enact on the rest of the pause menu logic
-            if(currentState != BattleMenuStates.HIDDEN)
+            if(currentState != BattleMenuStates.INACTIVE)
             {
                 // Handles moving the player input up and down when the player is selecting an option
                 if(Input.GetAxis(scrollInput) > 0f && currentMenuIndex > 0 && CheckIfOptionIsValid(currentMenuIndex - 1))
@@ -191,6 +198,9 @@ namespace MattScripts {
                     break;
                 case BattleMenuStates.ATTACK_TARGET:
                     // We have confirmed an action to attack
+                    HideMenus();
+                    StartCoroutine(battleController.PerformAttackAction(actionBox, prevIndexMenus.Peek(), battleController.GetSpecificEnemy(currentMenuIndex)));
+                    currentState = BattleMenuStates.INACTIVE;
                     break;
                 case BattleMenuStates.SPECIAL:
                     // We have confirmed what special attack we want to do
@@ -200,6 +210,9 @@ namespace MattScripts {
                     break;
                 case BattleMenuStates.SPECIAL_TARGET:
                     // We have confirmed our target to hit our attack on
+                    HideMenus();
+                    StartCoroutine(battleController.PerformAttackAction(actionBox, prevIndexMenus.Peek(), battleController.GetSpecificEnemy(currentMenuIndex)));
+                    currentState = BattleMenuStates.INACTIVE;
                     break;
                 case BattleMenuStates.ITEM:
                     // We confirmed what item to use
@@ -209,6 +222,9 @@ namespace MattScripts {
                     break;
                 case BattleMenuStates.ITEM_TARGET:
                     // We have confirmed who to use the item on
+                    HideMenus();
+                    StartCoroutine(battleController.PerformItemAction(actionBox, playerInventory.GetItemAtIndex(prevIndexMenus.Peek()), battleController.GetSpecificPartyMember(currentMenuIndex)));
+                    currentState = BattleMenuStates.INACTIVE;
                     break;
             }
 
@@ -284,32 +300,22 @@ namespace MattScripts {
         // Fills in all of the available party members in the group
         private void FillPartyTargetMenu()
         {
-            int subMenuListIndex = 0;
-            for(int currCharacterIndex = 0; currCharacterIndex < battleController.GetSizeOfCharacterList(); ++currCharacterIndex)
+            for(int currPartyIndex = 0; currPartyIndex < battleController.GetPartySize(); ++currPartyIndex)
             {
-                if(battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData is CharacterData)
-                {
-                    CharacterData currCharacter = (CharacterData)battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData;
-                    currentMenuParent.GetChild(subMenuListIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
-                    currentMenuParent.GetChild(subMenuListIndex).gameObject.SetActive(true);
-                    subMenuListIndex++;
-                }
+                CharacterData currCharacter = (CharacterData)battleController.GetSpecificPartyMember(currPartyIndex).battleData;
+                currentMenuParent.GetChild(currPartyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
+                currentMenuParent.GetChild(currPartyIndex).gameObject.SetActive(true);
             }
         }
 
         // Fills in all of the available enemies
         private void FillEnemyTargetMenu()
         {
-            int subMenuListIndex = 0;
-            for(int currCharacterIndex = 0; currCharacterIndex < battleController.GetSizeOfCharacterList(); ++currCharacterIndex)
+            for(int currEnemyIndex = 0; currEnemyIndex < battleController.GetEnemySize(); ++currEnemyIndex)
             {
-                if(battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData is EnemyData)
-                {
-                    EnemyData currCharacter = (EnemyData)battleController.GetSpecificCharacterInBattle(currCharacterIndex).battleData;
-                    currentMenuParent.GetChild(subMenuListIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.enemyName;
-                    currentMenuParent.GetChild(subMenuListIndex).gameObject.SetActive(true);
-                    subMenuListIndex++;
-                }
+                EnemyData currCharacter = (EnemyData)battleController.GetSpecificEnemy(currEnemyIndex).battleData;
+                currentMenuParent.GetChild(currEnemyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.enemyName;
+                currentMenuParent.GetChild(currEnemyIndex).gameObject.SetActive(true);
             }
         }
 
@@ -358,6 +364,33 @@ namespace MattScripts {
                     subCommandBox.transform.GetChild(0).GetChild(0).GetChild(currIndex).GetComponent<TextMeshProUGUI>().text = "";
                     subCommandBox.transform.GetChild(0).GetChild(0).GetChild(currIndex).gameObject.SetActive(false);
                 }
+            }
+        }
+    
+        // This hides the main commands, the description box, and the sub box when called
+        // This does NOT hide the action box
+        public void HideMenus()
+        {
+            if(currentState != BattleMenuStates.INACTIVE)
+            {
+                ChangeSelectedText(currentMenuIndex, -1);
+                commandBox.SetActive(false);
+                descriptionBox.SetActive(false);
+                subCommandBox.SetActive(false);
+                currentState = BattleMenuStates.INACTIVE;
+            }
+        }
+
+        // This reenables the main command box
+        public void ShowMenus()
+        {
+            if(currentState == BattleMenuStates.INACTIVE)
+            {
+                commandBox.SetActive(true);
+                descriptionBox.SetActive(true);
+
+                UpdateMenuContext();
+                currentState = BattleMenuStates.MAIN;
             }
         }
     }      
