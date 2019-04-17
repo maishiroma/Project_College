@@ -42,11 +42,7 @@ namespace MattScripts {
         // Sets the current turn order
         public int SetCurrentTurnOrder {
             set {
-                if(value > listOfAllEntitiesInTurnOrder.Length)
-                {
-                    currentTurnIndex = 0;
-                }
-                else if(value < 0)
+                if(value >= listOfAllEntitiesInTurnOrder.Length || value < 0)
                 {
                     currentTurnIndex = 0;
                 }
@@ -80,14 +76,23 @@ namespace MattScripts {
             switch(currentState)
             {
                 case BattleStates.START:
-                    break;
-                case BattleStates.PLAYER_TURN:
-                    break;
-                case BattleStates.ENEMY_TURN:
+                    // We determine who goes first
+                    if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
+                    {
+                        currentState = BattleStates.PLAYER_TURN;
+                        battleUIController.ShowMenus();
+                    }
+                    else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
+                    {
+                        currentState = BattleStates.ENEMY_TURN;
+                        EnemyAI(battleUIController.battleUI.transform.GetChild(3).gameObject);
+                    }
                     break;
                 case BattleStates.PLAYER_WIN:
+                    // TODO: Win condition
                     break;
                 case BattleStates.ENEMY_WIN:
+                    // TODO: Lose condition
                     break;
             }
 		}
@@ -287,10 +292,13 @@ namespace MattScripts {
             if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
             {
                 battleUIController.ShowMenus();
+                currentState = BattleStates.PLAYER_TURN;
             }
             else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
             {
                 battleUIController.CurrentState = BattleMenuStates.INACTIVE;
+                currentState = BattleStates.ENEMY_TURN;
+                EnemyAI(actionBox);
             }
             yield return null;
         }
@@ -303,7 +311,7 @@ namespace MattScripts {
             actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = currentItem.SpecifiedItem.itemName;
 
             // TODO: Animation for item usage
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(1f);
 
             // Restore amount
             if(currentItem.SpecifiedItem.itemType == ItemType.HEALTH)
@@ -316,7 +324,7 @@ namespace MattScripts {
                 targetedCharacter.CurrentSP += currentItem.SpecifiedItem.itemAmount;
                 Debug.Log("Restore " + currentItem.SpecifiedItem.itemAmount + " SP.");
             }
-            currentItem.Quantity -= 1;
+            GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>().RemoveItemFromInventory(currentItem, 1);
             yield return null;
 
             actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "";
@@ -328,12 +336,31 @@ namespace MattScripts {
             if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
             {
                 battleUIController.ShowMenus();
+                currentState = BattleStates.PLAYER_TURN;
             }
             else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
             {
                 battleUIController.CurrentState = BattleMenuStates.INACTIVE;
+                currentState = BattleStates.ENEMY_TURN;
+                EnemyAI(actionBox);
             }
             yield return null;
+        }
+    
+        // WIP: This method is invoked when it is the enemy's turn.
+        // For now, all we do is attack a random character
+        public void EnemyAI(GameObject actionBox)
+        {
+            // We first check to see if we are an enemy
+            if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
+            {
+                // We then decide on a random attack and a random target
+                int randAttackIndex = Random.Range(0, ((EnemyData)GetCurrentCharacterInTurnOrder().battleData).attackList.Count);
+                int randPartyMember = Random.Range(0, listOfAllParty.Length);
+
+                // We then call PerformAttackAction
+                StartCoroutine(PerformAttackAction(actionBox, randAttackIndex, GetSpecificPartyMember(randPartyMember)));
+            }
         }
     }
 }

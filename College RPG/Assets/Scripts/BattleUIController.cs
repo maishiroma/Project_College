@@ -58,7 +58,13 @@ namespace MattScripts {
             }
         }
 
-        // We initialize the UI Controller
+        // Activates the UI upon this script activating
+		private void Awake()
+		{
+            battleUI.SetActive(true);
+		}
+
+		// We initialize the UI Controller
 		private void Start()
 		{
             prevIndexMenus = new Stack<int>();
@@ -70,9 +76,7 @@ namespace MattScripts {
             descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
             currentMenuParent = commandBox.transform;
 
-            currentState = BattleMenuStates.MAIN;
-            ChangeSelectedText(currentMenuIndex, 0);
-            UpdateMenuContext();
+            HideMenus();
 		}
 
 		// Checks for the player input depending on the specific states
@@ -160,7 +164,14 @@ namespace MattScripts {
                     descText.text = ((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData).demonData.attackList[currentMenuIndex].attackDescription;
                     break;
                 case BattleMenuStates.ITEM:
-                    descText.text = playerInventory.GetItemAtIndex(currentMenuIndex).SpecifiedItem.itemDescription;
+                    if(playerInventory.GetItemAtIndex(currentMenuIndex) != null)
+                    {
+                        descText.text = playerInventory.GetItemAtIndex(currentMenuIndex).SpecifiedItem.itemDescription;
+                    }
+                    else
+                    {
+                        descText.text = "No items available...";
+                    }
                     break;
             }
         }
@@ -228,11 +239,7 @@ namespace MattScripts {
                     break;
             }
 
-            // All of this handles the logic for returning back to the first option
-            // We first save the previous index point and change the color of the text to be unselected
             prevIndexMenus.Push(currentMenuIndex);
-
-            // And we then update the selection to that new menu.
             currentMenuIndex = 0;
             ChangeSelectedText(currentMenuIndex, 0);
         }
@@ -377,20 +384,26 @@ namespace MattScripts {
                 commandBox.SetActive(false);
                 descriptionBox.SetActive(false);
                 subCommandBox.SetActive(false);
+
                 currentState = BattleMenuStates.INACTIVE;
             }
         }
 
-        // This reenables the main command box
+        // This reenables the Command and Description box, resetting the state to the main user state
         public void ShowMenus()
         {
             if(currentState == BattleMenuStates.INACTIVE)
             {
+                prevIndexMenus.Clear();
                 commandBox.SetActive(true);
                 descriptionBox.SetActive(true);
 
-                UpdateMenuContext();
+                currentMenuParent = commandBox.transform;
+                ChangeSelectedText(currentMenuIndex, 0);
                 currentState = BattleMenuStates.MAIN;
+
+                UpdateMenuContext();
+                DeactivateSubMenuItems();
             }
         }
     }      
