@@ -71,8 +71,8 @@ namespace MattScripts {
 		}
 
         // On each frame, we run the corresponding logic depending on what state we are in.
-		private void Update()
-		{
+        private void Update()
+        {
             switch(currentState)
             {
                 case BattleStates.START:
@@ -88,14 +88,8 @@ namespace MattScripts {
                         EnemyAI(battleUIController.battleUI.transform.GetChild(3).gameObject);
                     }
                     break;
-                case BattleStates.PLAYER_WIN:
-                    // TODO: Win condition
-                    break;
-                case BattleStates.ENEMY_WIN:
-                    // TODO: Lose condition
-                    break;
             }
-		}
+        }
 
         // Determines the order of who goes first
         // First in array = fastest; last = slowest
@@ -155,6 +149,48 @@ namespace MattScripts {
             }
         }
     
+        // WIP: The player won, so we take them to some result screen and back to the map
+        private IEnumerator PlayerWin()
+        {
+            Debug.Log("The player won!");
+            yield return null;
+        }
+
+        // WIP: We take the player to the game over screen
+        private IEnumerator EnemyWin()
+        {
+            Debug.Log("The player lost...");
+            yield return null;
+        }
+
+        // Checks if any side lost all of their characters
+        // Returns 1 if the player won, -1 if the player lost, or 0 if no one lost
+        private int CheckWhoWon()
+        {
+            int partyDeath = 0;
+            int enemyDeath = 0;
+            foreach(BattleStats currEntity in listOfAllEntitiesInTurnOrder)
+            {
+                if(currEntity.IsDead == true && currEntity.battleData is CharacterData)
+                {
+                    partyDeath++;
+                    if(partyDeath == listOfAllParty.Length)
+                    {
+                        return -1;
+                    }
+                }
+                else if(currEntity.IsDead == true && currEntity.battleData is EnemyData)
+                {
+                    enemyDeath++;
+                    if(enemyDeath == listOfAllEnemies.Length)
+                    {
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+        }
+
         // Returns the current character that is in the turn order
         public BattleStats GetCurrentCharacterInTurnOrder()
         {
@@ -222,7 +258,7 @@ namespace MattScripts {
                 //yield return new WaitForSeconds(5f);
 
                 // Deal damage
-                int attackPower = currentCharacter.baseAttack;
+                int attackPower = currentCharacter.baseAttack + currentAttack.attackPower;
                 int defensePower = 0;
                 if(currentAttack.attackType == AttackType.PHYSICAL)
                 {
@@ -236,7 +272,8 @@ namespace MattScripts {
                     attackPower += currentDemon.spAttackStat;
                     defensePower += ((EnemyData)targetedCharacter.battleData).spDefenseStat;
 
-                    targetedCharacter.CurrentHP -= attackPower - defensePower;
+                    targetedCharacter.CurrentHP -= (attackPower - defensePower);
+                    GetCurrentCharacterInTurnOrder().CurrentSP -= currentAttack.attackCost;
                 }
                 Debug.Log(((EnemyData)targetedCharacter.battleData).enemyName + " took " + (attackPower - defensePower) + " damage!");
                 yield return new WaitForSeconds(1);
@@ -262,14 +299,14 @@ namespace MattScripts {
                 //yield return new WaitForSeconds(5f);
 
                 // Deal damage
-                int attackPower = 0;
+                int attackPower = currentAttack.attackPower;
                 int defensePower = ((CharacterData)targetedCharacter.battleData).baseDefense;
                 if(currentAttack.attackType == AttackType.PHYSICAL)
                 {
                     attackPower += currentEnemy.phyAttackStat;
                     defensePower += targetedCharacterDemon.phyDefenseStat;
 
-                    targetedCharacter.CurrentHP -= attackPower - defensePower;
+                    targetedCharacter.CurrentHP -= (attackPower - defensePower);
                 }
                 else if(currentAttack.attackType == AttackType.SPECIAL)
                 {
@@ -277,6 +314,7 @@ namespace MattScripts {
                     defensePower += targetedCharacterDemon.spDefenseStat;
 
                     targetedCharacter.CurrentHP -= attackPower - defensePower;
+                    GetCurrentCharacterInTurnOrder().CurrentSP -= currentAttack.attackCost;
                 }
                 Debug.Log(((CharacterData)targetedCharacter.battleData).characterName + " took " + (attackPower - defensePower) + " damage!");
                 yield return new WaitForSeconds(1);
@@ -287,20 +325,48 @@ namespace MattScripts {
                 yield return null;
             }
 
-            // We then increment the turn order and change to the next turn
-            SetCurrentTurnOrder = currentTurnIndex + 1;
-            if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
+            // Check if the target is dead
+            if(targetedCharacter.CurrentHP <= 0)
             {
-                battleUIController.ShowMenus();
-                currentState = BattleStates.PLAYER_TURN;
+                // One of the player characters is dead, so we deactivate them
+                // For now, we hide the enemy sprite
+                targetedCharacter.IsDead = true;
+                targetedCharacter.gameObject.GetComponentInChildren<SpriteRenderer>().enabled = false;
+                yield return new WaitForSeconds(1f);
+
+                // TODO: Do some animation of the character dying
             }
-            else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
+
+            // We check if a side is wiped, else we continue
+            switch(CheckWhoWon())
             {
-                battleUIController.CurrentState = BattleMenuStates.INACTIVE;
-                currentState = BattleStates.ENEMY_TURN;
-                EnemyAI(actionBox);
+                case 0:
+                    // No one lost yet so We then increment the turn order and change to the next turn
+                    SetCurrentTurnOrder = currentTurnIndex + 1;
+                    if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
+                    {
+                        battleUIController.ShowMenus();
+                        currentState = BattleStates.PLAYER_TURN;
+                    }
+                    else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
+                    {
+                        battleUIController.CurrentState = BattleMenuStates.INACTIVE;
+                        currentState = BattleStates.ENEMY_TURN;
+                        EnemyAI(actionBox);
+                    }
+                    yield return null;
+                    break;
+                case 1:
+                    // The player won, so we change to the player victory
+                    StartCoroutine(PlayerWin());
+                    currentState = BattleStates.PLAYER_WIN;
+                    break;
+                case -1:
+                    // The enemy won, so we change to the enemy victory
+                    StartCoroutine(EnemyWin());
+                    currentState = BattleStates.ENEMY_WIN;
+                    break;
             }
-            yield return null;
         }
 
         // Perform using an item on the selected character
@@ -357,6 +423,11 @@ namespace MattScripts {
                 // We then decide on a random attack and a random target
                 int randAttackIndex = Random.Range(0, ((EnemyData)GetCurrentCharacterInTurnOrder().battleData).attackList.Count);
                 int randPartyMember = Random.Range(0, listOfAllParty.Length);
+
+                while(GetSpecificPartyMember(randPartyMember).IsDead == true)
+                {
+                    randPartyMember = Random.Range(0, listOfAllParty.Length);
+                }
 
                 // We then call PerformAttackAction
                 StartCoroutine(PerformAttackAction(actionBox, randAttackIndex, GetSpecificPartyMember(randPartyMember)));

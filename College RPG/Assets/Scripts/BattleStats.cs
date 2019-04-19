@@ -18,6 +18,7 @@ namespace MattScripts {
         private int maxHP;
         private int currentSP;
         private int maxSP;
+        private bool isDead;
 
         public int CurrentHP {
             get { return currentHP; }
@@ -51,6 +52,20 @@ namespace MattScripts {
                 else
                 {
                     currentSP = value;
+                }
+            }
+        }
+
+        public bool IsDead {
+            get { return isDead;}
+            set {
+                if(currentHP <= 0)
+                {
+                    isDead = true;
+                }
+                else
+                {
+                    isDead = value;
                 }
             }
         }
@@ -158,7 +173,6 @@ namespace MattScripts {
                 Debug.LogError("You did not pass a valid object in battle data!");
                 return false;
             }
-        }
+        }    
     }
-
 }

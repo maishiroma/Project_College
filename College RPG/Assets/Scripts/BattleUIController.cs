@@ -215,9 +215,16 @@ namespace MattScripts {
                     break;
                 case BattleMenuStates.SPECIAL:
                     // We have confirmed what special attack we want to do
-                    DeactivateSubMenuItems();
-                    FillEnemyTargetMenu();
-                    currentState = BattleMenuStates.SPECIAL_TARGET;
+                    if(((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData).demonData.attackList[currentMenuIndex].attackCost <= battleController.GetCurrentCharacterInTurnOrder().CurrentSP)
+                    {
+                        DeactivateSubMenuItems();
+                        FillEnemyTargetMenu();
+                        currentState = BattleMenuStates.SPECIAL_TARGET;   
+                    }
+                    else
+                    {
+                        Debug.Log("Can't select that, not enough SP!");
+                    }
                     break;
                 case BattleMenuStates.SPECIAL_TARGET:
                     // We have confirmed our target to hit our attack on
@@ -320,9 +327,12 @@ namespace MattScripts {
         {
             for(int currEnemyIndex = 0; currEnemyIndex < battleController.GetEnemySize(); ++currEnemyIndex)
             {
-                EnemyData currCharacter = (EnemyData)battleController.GetSpecificEnemy(currEnemyIndex).battleData;
-                currentMenuParent.GetChild(currEnemyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.enemyName;
-                currentMenuParent.GetChild(currEnemyIndex).gameObject.SetActive(true);
+                if(battleController.GetSpecificEnemy(currEnemyIndex).IsDead == false)
+                {
+                    EnemyData currCharacter = (EnemyData)battleController.GetSpecificEnemy(currEnemyIndex).battleData;
+                    currentMenuParent.GetChild(currEnemyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.enemyName;
+                    currentMenuParent.GetChild(currEnemyIndex).gameObject.SetActive(true);   
+                }
             }
         }
 
@@ -395,6 +405,7 @@ namespace MattScripts {
             if(currentState == BattleMenuStates.INACTIVE)
             {
                 prevIndexMenus.Clear();
+
                 commandBox.SetActive(true);
                 descriptionBox.SetActive(true);
 
