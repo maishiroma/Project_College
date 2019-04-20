@@ -149,17 +149,26 @@ namespace MattScripts {
             }
         }
     
-        // WIP: The player won, so we take them to some result screen and back to the map
-        private IEnumerator PlayerWin()
+        // The player won, so we take them to some result screen and back to the map
+        private IEnumerator PlayerWin(GameObject actionBox)
         {
-            Debug.Log("The player won!");
+            actionBox.SetActive(true);
+            actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "You won!";
+            yield return new WaitForSeconds(2f);
+
+            currentBattleEvent.EventOutcome();
             yield return null;
         }
 
         // WIP: We take the player to the game over screen
-        private IEnumerator EnemyWin()
+        private IEnumerator EnemyWin(GameObject actionBox)
         {
-            Debug.Log("The player lost...");
+            actionBox.SetActive(true);
+            actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "You lost...";
+            yield return new WaitForSeconds(2f);
+
+            // TODO: go to gameover screen
+
             yield return null;
         }
 
@@ -358,12 +367,12 @@ namespace MattScripts {
                     break;
                 case 1:
                     // The player won, so we change to the player victory
-                    StartCoroutine(PlayerWin());
+                    StartCoroutine(PlayerWin(actionBox));
                     currentState = BattleStates.PLAYER_WIN;
                     break;
                 case -1:
                     // The enemy won, so we change to the enemy victory
-                    StartCoroutine(EnemyWin());
+                    StartCoroutine(EnemyWin(actionBox));
                     currentState = BattleStates.ENEMY_WIN;
                     break;
             }
