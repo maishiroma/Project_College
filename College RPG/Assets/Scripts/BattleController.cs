@@ -39,6 +39,10 @@ namespace MattScripts {
         private BattleStats[] listOfAllEntitiesInTurnOrder;
         private int currentTurnIndex;
 
+        public BattleStates CurrentState {
+            get {return currentState;}
+        }
+
         // Sets the current turn order
         public int SetCurrentTurnOrder {
             set {
@@ -85,7 +89,7 @@ namespace MattScripts {
                     else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
                     {
                         currentState = BattleStates.ENEMY_TURN;
-                        EnemyAI(battleUIController.battleUI.transform.GetChild(3).gameObject);
+                        EnemyAI();
                     }
                     break;
             }
@@ -149,29 +153,6 @@ namespace MattScripts {
             }
         }
     
-        // The player won, so we take them to some result screen and back to the map
-        private IEnumerator PlayerWin(GameObject actionBox)
-        {
-            actionBox.SetActive(true);
-            actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "You won!";
-            yield return new WaitForSeconds(2f);
-
-            currentBattleEvent.EventOutcome();
-            yield return null;
-        }
-
-        // WIP: We take the player to the game over screen
-        private IEnumerator EnemyWin(GameObject actionBox)
-        {
-            actionBox.SetActive(true);
-            actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "You lost...";
-            yield return new WaitForSeconds(2f);
-
-            // TODO: go to gameover screen
-
-            yield return null;
-        }
-
         // Checks if any side lost all of their characters
         // Returns 1 if the player won, -1 if the player lost, or 0 if no one lost
         private int CheckWhoWon()
@@ -249,7 +230,7 @@ namespace MattScripts {
         }
 
         // Performs an attack action using the current character on the targeted character
-        public IEnumerator PerformAttackAction(GameObject actionBox, int attackIndex, BattleStats targetedCharacter)
+        public IEnumerator PerformAttackAction(int attackIndex, BattleStats targetedCharacter)
         {
             if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
             {
@@ -259,8 +240,7 @@ namespace MattScripts {
                 AttackData currentAttack = currentCharacter.demonData.attackList[attackIndex];
 
                 // Sets the text box to show the attack
-                actionBox.SetActive(true);
-                actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = currentAttack.attackName;
+                battleUIController.ToggleActionBox(true, currentAttack.attackName);
 
                 // TODO: Associate animation with character
                 //GetCurrentCharacterInTurnOrder().gameObject.GetComponent<Animator> currentDemon.attackList[attackIndex].attackAnimation;
@@ -288,8 +268,7 @@ namespace MattScripts {
                 yield return new WaitForSeconds(1);
 
                 // Hide box
-                actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "";
-                actionBox.SetActive(false);
+                battleUIController.ToggleActionBox(false);
                 yield return null;
             }
             else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
@@ -300,8 +279,7 @@ namespace MattScripts {
                 AttackData currentAttack = currentEnemy.attackList[attackIndex];
 
                 // Sets the text box to show the attack
-                actionBox.SetActive(true);
-                actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = currentAttack.attackName;
+                battleUIController.ToggleActionBox(true, currentAttack.attackName);
 
                 // TODO: Associate animation with character
                 //GetCurrentCharacterInTurnOrder().gameObject.GetComponent<Animator> currentDemon.attackList[attackIndex].attackAnimation;
@@ -329,8 +307,7 @@ namespace MattScripts {
                 yield return new WaitForSeconds(1);
 
                 // Hide box
-                actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "";
-                actionBox.SetActive(false);
+                battleUIController.ToggleActionBox(false);
                 yield return null;
             }
 
@@ -361,29 +338,34 @@ namespace MattScripts {
                     {
                         battleUIController.CurrentState = BattleMenuStates.INACTIVE;
                         currentState = BattleStates.ENEMY_TURN;
-                        EnemyAI(actionBox);
+                        EnemyAI();
                     }
                     yield return null;
                     break;
                 case 1:
                     // The player won, so we change to the player victory
-                    StartCoroutine(PlayerWin(actionBox));
+                    battleUIController.ToggleActionBox(true, "You won!");
+                    yield return new WaitForSeconds(2f);
+
                     currentState = BattleStates.PLAYER_WIN;
+                    currentBattleEvent.EventOutcome();
                     break;
                 case -1:
                     // The enemy won, so we change to the enemy victory
-                    StartCoroutine(EnemyWin(actionBox));
+                    battleUIController.ToggleActionBox(true, "You lost...");
+                    yield return new WaitForSeconds(2f);
+
                     currentState = BattleStates.ENEMY_WIN;
+                    currentBattleEvent.EventOutcome();
                     break;
             }
         }
 
         // Perform using an item on the selected character
-        public IEnumerator PerformItemAction(GameObject actionBox, InventoryItem currentItem, BattleStats targetedCharacter)
+        public IEnumerator PerformItemAction(InventoryItem currentItem, BattleStats targetedCharacter)
         {
             // Display the action box
-            actionBox.SetActive(true);
-            actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = currentItem.SpecifiedItem.itemName;
+            battleUIController.ToggleActionBox(true, currentItem.SpecifiedItem.itemName);
 
             // TODO: Animation for item usage
             yield return new WaitForSeconds(1f);
@@ -402,8 +384,7 @@ namespace MattScripts {
             GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>().RemoveItemFromInventory(currentItem, 1);
             yield return null;
 
-            actionBox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "";
-            actionBox.SetActive(false);
+            battleUIController.ToggleActionBox(false);
             yield return null;
 
             // We then increment the turn order and change to the next turn
@@ -417,14 +398,14 @@ namespace MattScripts {
             {
                 battleUIController.CurrentState = BattleMenuStates.INACTIVE;
                 currentState = BattleStates.ENEMY_TURN;
-                EnemyAI(actionBox);
+                EnemyAI();
             }
             yield return null;
         }
     
         // WIP: This method is invoked when it is the enemy's turn.
         // For now, all we do is attack a random character
-        public void EnemyAI(GameObject actionBox)
+        public void EnemyAI()
         {
             // We first check to see if we are an enemy
             if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
@@ -439,7 +420,7 @@ namespace MattScripts {
                 }
 
                 // We then call PerformAttackAction
-                StartCoroutine(PerformAttackAction(actionBox, randAttackIndex, GetSpecificPartyMember(randPartyMember)));
+                StartCoroutine(PerformAttackAction(randAttackIndex, GetSpecificPartyMember(randPartyMember)));
             }
         }
     }

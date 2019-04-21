@@ -14,6 +14,7 @@ namespace MattScripts {
     {
         // TODO: Determine how EXP and gold are rewarded after fight
         [Header("Sub Variables")]
+        public int gameOverIndex = 5;
         public Transform respawnPlayerLocation;
         public List<EnemyData> listOfEnemiesInFight;
 
@@ -55,17 +56,34 @@ namespace MattScripts {
             origCameraMaxZ = mainCamera.maxZPos;
             origSceneIndex = SceneManager.GetActiveScene().buildIndex;
 
-            DontDestroyOnLoad(gameObject);
+            // We make this object the parent of the GameManager so that we can have an easier time finding it
+            gameObject.transform.parent = GameManager.Instance.gameObject.transform;
 		}
 
         // We conclude the event and take the player back to the original scene
         public override void EventOutcome()
         {
-            // TODO: We first reward the player with their rewards 
+            if(FindObjectOfType<BattleController>() != null)
+            {
+                BattleController controller = FindObjectOfType<BattleController>();
 
-            // And then warp them back using the saved coords and deactivate this event.
-            gameObject.transform.parent = GameManager.Instance.gameObject.transform;
-            StartCoroutine(gameObject.GetComponent<TransitionArea>().ReturnToOrigScene(origSceneIndex));
+                if(controller.CurrentState == BattleStates.ENEMY_WIN)
+                {
+                    // We go to the Game Over Scene
+                    GameManager.Instance.CurrentState = GameStates.GAME_OVER;
+                    StartCoroutine(gameObject.GetComponent<TransitionArea>().GoToSpecificScene(gameOverIndex));
+
+                    // Since we do not need this anymore, we will queue a destroy on this
+                    Destroy(gameObject, 4f);
+                }
+                else if(controller.CurrentState == BattleStates.PLAYER_WIN)
+                {
+                    // TODO: We first reward the player with their rewards 
+
+                    // And then warp them back using the saved coords and deactivate this event.
+                    StartCoroutine(gameObject.GetComponent<TransitionArea>().GoToSpecificScene(origSceneIndex));
+                }
+            }
         }
     
         // We reset the player and camera to what they were based on what we saved prior

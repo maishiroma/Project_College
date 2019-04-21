@@ -93,9 +93,8 @@ namespace MattScripts {
         }
     
         // This is called from outside to return the player to the specified scene
-        public IEnumerator ReturnToOrigScene(int origIndex)
+        public IEnumerator GoToSpecificScene(int sceneIndex)
         {
-            // We stop the player from moving and fade to black
             if(fadeOverlay == null)
             {
                 fadeOverlay = GameObject.FindWithTag("FadeUI").GetComponent<Image>();
@@ -104,8 +103,23 @@ namespace MattScripts {
             fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
             yield return new WaitForSeconds(fadeTime);
 
-            // We load to the new scene and exit
-            LoadingScreenManager.LoadScene(origIndex);
+            // We load to the new scene
+            LoadingScreenManager.LoadScene(sceneIndex);
+        }
+    
+        // Used to transition into the app quitting
+        public IEnumerator QuitGame()
+        {
+            if(fadeOverlay == null)
+            {
+                fadeOverlay = GameObject.FindWithTag("FadeUI").GetComponent<Image>();
+            }
+
+            fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
+            yield return new WaitForSeconds(fadeTime);
+
+            Debug.Log("We quit");
+            Application.Quit();
         }
     }
 

@@ -49,6 +49,7 @@ namespace MattScripts {
         private bool hasScrolled = false;
 
         private TextMeshProUGUI descText;                               // Hard refs to store for later usage
+        private TextMeshProUGUI actionText;
         private PlayerInventory playerInventory;
 
         public BattleMenuStates CurrentState {
@@ -74,6 +75,7 @@ namespace MattScripts {
             subCommandBox = battleUI.transform.GetChild(2).gameObject;
             actionBox = battleUI.transform.GetChild(3).gameObject;
             descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
+            actionText = actionBox.GetComponentInChildren<TextMeshProUGUI>();
             currentMenuParent = commandBox.transform;
 
             HideMenus();
@@ -210,7 +212,7 @@ namespace MattScripts {
                 case BattleMenuStates.ATTACK_TARGET:
                     // We have confirmed an action to attack
                     HideMenus();
-                    StartCoroutine(battleController.PerformAttackAction(actionBox, prevIndexMenus.Peek(), battleController.GetSpecificEnemy(currentMenuIndex)));
+                    StartCoroutine(battleController.PerformAttackAction(prevIndexMenus.Peek(), battleController.GetSpecificEnemy(currentMenuIndex)));
                     currentState = BattleMenuStates.INACTIVE;
                     break;
                 case BattleMenuStates.SPECIAL:
@@ -229,7 +231,7 @@ namespace MattScripts {
                 case BattleMenuStates.SPECIAL_TARGET:
                     // We have confirmed our target to hit our attack on
                     HideMenus();
-                    StartCoroutine(battleController.PerformAttackAction(actionBox, prevIndexMenus.Peek(), battleController.GetSpecificEnemy(currentMenuIndex)));
+                    StartCoroutine(battleController.PerformAttackAction(prevIndexMenus.Peek(), battleController.GetSpecificEnemy(currentMenuIndex)));
                     currentState = BattleMenuStates.INACTIVE;
                     break;
                 case BattleMenuStates.ITEM:
@@ -241,7 +243,7 @@ namespace MattScripts {
                 case BattleMenuStates.ITEM_TARGET:
                     // We have confirmed who to use the item on
                     HideMenus();
-                    StartCoroutine(battleController.PerformItemAction(actionBox, playerInventory.GetItemAtIndex(prevIndexMenus.Peek()), battleController.GetSpecificPartyMember(currentMenuIndex)));
+                    StartCoroutine(battleController.PerformItemAction(playerInventory.GetItemAtIndex(prevIndexMenus.Peek()), battleController.GetSpecificPartyMember(currentMenuIndex)));
                     currentState = BattleMenuStates.INACTIVE;
                     break;
             }
@@ -416,6 +418,13 @@ namespace MattScripts {
                 UpdateMenuContext();
                 DeactivateSubMenuItems();
             }
+        }
+    
+        // A Helper method that toggles the text box for actions to show a specific text
+        public void ToggleActionBox(bool isShowing, string textToAdd = "")
+        {
+            actionBox.SetActive(isShowing);
+            actionText.text = textToAdd;
         }
     }      
 }
