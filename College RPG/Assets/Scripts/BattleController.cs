@@ -232,12 +232,16 @@ namespace MattScripts {
         // Performs an attack action using the current character on the targeted character
         public IEnumerator PerformAttackAction(int attackIndex, BattleStats targetedCharacter)
         {
+            AttackData currentAttack = null;
+            string nameOfAttacker = "";
+            int damageDealt = 0;
+
             if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
             {
                 // Player atacks enemy
                 CharacterData currentCharacter = (CharacterData)GetCurrentCharacterInTurnOrder().battleData;
-                DemonData currentDemon = currentCharacter.demonData;
-                AttackData currentAttack = currentCharacter.demonData.attackList[attackIndex];
+                currentAttack = currentCharacter.demonData.attackList[attackIndex];
+                nameOfAttacker = currentCharacter.characterName;
 
                 // Sets the text box to show the attack
                 battleUIController.ToggleActionBox(true, currentAttack.attackName);
@@ -247,36 +251,15 @@ namespace MattScripts {
                 //yield return new WaitForSeconds(5f);
 
                 // Deal damage
-                int attackPower = currentCharacter.baseAttack + currentAttack.attackPower;
-                int defensePower = 0;
-                if(currentAttack.attackType == AttackType.PHYSICAL)
-                {
-                    attackPower += currentDemon.phyAttackStat;
-                    defensePower += ((EnemyData)targetedCharacter.battleData).phyDefenseStat;
-
-                    targetedCharacter.CurrentHP -= attackPower - defensePower;
-                }
-                else if(currentAttack.attackType == AttackType.SPECIAL)
-                {
-                    attackPower += currentDemon.spAttackStat;
-                    defensePower += ((EnemyData)targetedCharacter.battleData).spDefenseStat;
-
-                    targetedCharacter.CurrentHP -= (attackPower - defensePower);
-                    GetCurrentCharacterInTurnOrder().CurrentSP -= currentAttack.attackCost;
-                }
-                Debug.Log(((EnemyData)targetedCharacter.battleData).enemyName + " took " + (attackPower - defensePower) + " damage!");
+                damageDealt = targetedCharacter.DealDamage(GetCurrentCharacterInTurnOrder(), currentAttack);
                 yield return new WaitForSeconds(1);
-
-                // Hide box
-                battleUIController.ToggleActionBox(false);
-                yield return null;
             }
             else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
             {
                 // Enemy attacks player
                 EnemyData currentEnemy = (EnemyData)GetCurrentCharacterInTurnOrder().battleData;
-                DemonData targetedCharacterDemon = ((CharacterData)targetedCharacter.battleData).demonData;
-                AttackData currentAttack = currentEnemy.attackList[attackIndex];
+                currentAttack = currentEnemy.attackList[attackIndex];
+                nameOfAttacker = currentEnemy.enemyName;
 
                 // Sets the text box to show the attack
                 battleUIController.ToggleActionBox(true, currentAttack.attackName);
@@ -286,42 +269,34 @@ namespace MattScripts {
                 //yield return new WaitForSeconds(5f);
 
                 // Deal damage
-                int attackPower = currentAttack.attackPower;
-                int defensePower = ((CharacterData)targetedCharacter.battleData).baseDefense;
-                if(currentAttack.attackType == AttackType.PHYSICAL)
-                {
-                    attackPower += currentEnemy.phyAttackStat;
-                    defensePower += targetedCharacterDemon.phyDefenseStat;
-
-                    targetedCharacter.CurrentHP -= (attackPower - defensePower);
-                }
-                else if(currentAttack.attackType == AttackType.SPECIAL)
-                {
-                    attackPower += currentEnemy.spAttackStat;
-                    defensePower += targetedCharacterDemon.spDefenseStat;
-
-                    targetedCharacter.CurrentHP -= attackPower - defensePower;
-                    GetCurrentCharacterInTurnOrder().CurrentSP -= currentAttack.attackCost;
-                }
-                Debug.Log(((CharacterData)targetedCharacter.battleData).characterName + " took " + (attackPower - defensePower) + " damage!");
+                damageDealt = targetedCharacter.DealDamage(GetCurrentCharacterInTurnOrder(), currentAttack);
                 yield return new WaitForSeconds(1);
-
-                // Hide box
-                battleUIController.ToggleActionBox(false);
-                yield return null;
             }
+
+            // Change the box to reflect effectiveness
+            switch(targetedCharacter.GetAttackEffectiveness(currentAttack))
+            {
+                case AffinityValues.WEAK:
+                    battleUIController.ToggleActionBox(true, "Hit the weakness!");
+                    break;
+                case AffinityValues.RESISTANT:
+                    battleUIController.ToggleActionBox(true, "Uh...that was not very effective...");
+                    break;
+                case AffinityValues.NULL:
+                    battleUIController.ToggleActionBox(true, "That did nothing!");
+                    break;
+            }
+            yield return new WaitForSeconds(1f);
+
+            battleUIController.ToggleActionBox(true, nameOfAttacker + " did " + damageDealt + " damage!");
+            yield return new WaitForSeconds(1f);
 
             // Check if the target is dead
-            if(targetedCharacter.CurrentHP <= 0)
-            {
-                // One of the player characters is dead, so we deactivate them
-                // For now, we hide the enemy sprite
-                targetedCharacter.IsDead = true;
-                targetedCharacter.gameObject.GetComponentInChildren<SpriteRenderer>().enabled = false;
-                yield return new WaitForSeconds(1f);
+            targetedCharacter.CheckIfDead();
 
-                // TODO: Do some animation of the character dying
-            }
+            // Hide box
+            battleUIController.ToggleActionBox(false);
+            yield return null;
 
             // We check if a side is wiped, else we continue
             switch(CheckWhoWon())
@@ -374,7 +349,7 @@ namespace MattScripts {
             if(currentItem.SpecifiedItem.itemType == ItemType.HEALTH)
             {
                 targetedCharacter.CurrentHP += currentItem.SpecifiedItem.itemAmount;
-                Debug.Log("Restore " + currentItem.SpecifiedItem.itemAmount + " HP.");
+                Debug.Log("Restore " + currentItem.SpecifiedItem.itemAmount + " to HP.");
             }
             else if(currentItem.SpecifiedItem.itemType == ItemType.SP)
             {

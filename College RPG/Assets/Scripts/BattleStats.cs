@@ -174,5 +174,131 @@ namespace MattScripts {
                 return false;
             }
         }    
+    
+        // Calculates how damage will be dealt to this entity
+        // Returns the amount of damage done
+        public int DealDamage(BattleStats attacker, AttackData currentAttack)
+        {
+            int attackPower = 0;
+            int defensePower = 0;
+
+            if(attacker.battleData is CharacterData)
+            {
+                // If the attacker is a party member, we are attacking an enemy
+                CharacterData attacker_casted = (CharacterData)attacker.battleData;
+                EnemyData target = (EnemyData)battleData;
+
+                if(currentAttack.attackType == AttackType.PHYSICAL)
+                {
+                    attackPower = attacker_casted.baseAttack + currentAttack.attackPower + attacker_casted.demonData.phyAttackStat;
+                    defensePower = target.phyDefenseStat;
+                }
+                else if(currentAttack.attackType == AttackType.SPECIAL)
+                {
+                    attackPower = attacker_casted.baseAttack + currentAttack.attackPower + attacker_casted.demonData.spAttackStat;
+                    defensePower = target.spDefenseStat;
+
+                    attacker.CurrentSP -= currentAttack.attackCost;
+                }
+                Debug.Log(attacker_casted.characterName + " attacked " + target.enemyName);
+            }
+            else if(attacker.battleData is EnemyData)
+            {
+                // If the attacker is an enemy, we are attacking a party member
+                EnemyData attacker_casted = (EnemyData)attacker.battleData;
+                CharacterData target = (CharacterData)battleData;
+
+                if(currentAttack.attackType == AttackType.PHYSICAL)
+                {
+                    attackPower = currentAttack.attackPower + attacker_casted.phyAttackStat;
+                    defensePower = target.baseDefense + target.demonData.phyDefenseStat;
+                }
+                else if(currentAttack.attackType == AttackType.SPECIAL)
+                {
+                    attackPower = currentAttack.attackPower + attacker_casted.spAttackStat;
+                    defensePower = target.baseDefense + target.demonData.phyDefenseStat;
+
+                    attacker.CurrentSP -= currentAttack.attackCost;
+                }
+                Debug.Log(attacker_casted.enemyName + " attacked " + target.characterName);
+            }
+
+            // Modifies the attack power depending on the affinity of the attack
+            switch(GetAttackEffectiveness(currentAttack))
+            {
+                case AffinityValues.RESISTANT:
+                    attackPower /= 2;
+                    break;
+                case AffinityValues.WEAK:
+                    attackPower *= 2;
+                    break;
+                case AffinityValues.NULL:
+                    attackPower *= 0;
+                    break;
+            }
+
+            int finalDamage = (int)Mathf.Clamp(attackPower - defensePower, 0, Mathf.Infinity);
+            Debug.Log("The attack did " + finalDamage + " damage.");
+
+            currentHP -= finalDamage;
+            return finalDamage;
+        }
+
+        // Check if the player is dead
+        public bool CheckIfDead()
+        {
+            if(currentHP <= 0)
+            {
+                // One of the player characters is dead, so we deactivate them
+                // For now, we hide the enemy sprite
+                isDead = true;
+                gameObject.GetComponentInChildren<SpriteRenderer>().enabled = false;
+
+                // TODO: Do some animation of the character dying
+                return true;
+            }
+            return false;
+        }
+
+        // Returns the given affinity value that the attack has on the current entity
+        public AffinityValues GetAttackEffectiveness(AttackData currentAttack)
+        {
+            if(battleData is CharacterData)
+            {
+                return ((CharacterData)battleData).demonData.affinityArray[ReturnAttackAffinityIndex(currentAttack)];
+            }
+            else if(battleData is EnemyData)
+            {
+                return ((EnemyData)battleData).affinityArray[ReturnAttackAffinityIndex(currentAttack)];
+            }
+            return AffinityValues.NORMAL;
+        }
+
+        // Helper method that translates an attack's affinity to an index number
+        // This index number corresponds to an entity's affiliated affinity with that affinity
+        private int ReturnAttackAffinityIndex(AttackData currentAttack)
+        {
+            switch(currentAttack.attackAffinity)
+            {
+                case AttackAffinity.CONTACT:
+                    return 0;
+                case AttackAffinity.FIRE:
+                    return 1;
+                case AttackAffinity.ICE:
+                    return 2;
+                case AttackAffinity.WIND:
+                    return 3;
+                case AttackAffinity.THUNDER:
+                    return 4;
+                case AttackAffinity.LIGHT:
+                    return 5;
+                case AttackAffinity.DARK:
+                    return 6;
+                case AttackAffinity.ALMIGHTY:
+                    return 7;
+            }
+            Debug.Log("The affinity on this attack does not exist!");
+            return -1;
+        }
     }
 }
