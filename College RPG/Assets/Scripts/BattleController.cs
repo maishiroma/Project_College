@@ -21,22 +21,26 @@ namespace MattScripts {
     [RequireComponent(typeof(BattleUIController))]
     public class BattleController : MonoBehaviour {
 
-        public BattleUIController battleUIController;
-
         [Header("General Variables")]
         public Transform[] partySpawnLocations;
         public Transform[] enemySpawnLocations;
+        [Range(1f,5f)]
+        public float turnIndicatorYOffset = 1f;
 
         [Header("Prefabs")]
         public GameObject characterPrefab;
+
+        [Header("External References")]
+        public BattleUIController battleUIController;
+        public GameObject turnIndicator;
 
         // Private Variables
         [SerializeField]
         private BattleStates currentState;
         private BattleEvent currentBattleEvent;
-        private BattleStats[] listOfAllParty;
-        private BattleStats[] listOfAllEnemies;
-        private BattleStats[] listOfAllEntitiesInTurnOrder;
+        private List<BattleStats> listOfAllParty;
+        private List<BattleStats> listOfAllEnemies;
+        private List<BattleStats> listOfAllEntitiesInTurnOrder;
         private int currentTurnIndex;
 
         public BattleStates CurrentState {
@@ -46,7 +50,7 @@ namespace MattScripts {
         // Sets the current turn order
         public int SetCurrentTurnOrder {
             set {
-                if(value >= listOfAllEntitiesInTurnOrder.Length || value < 0)
+                if(value >= listOfAllEntitiesInTurnOrder.Count || value < 0)
                 {
                     currentTurnIndex = 0;
                 }
@@ -67,7 +71,7 @@ namespace MattScripts {
 
             SpawnParty();
             SpawnEnemies();
-            listOfAllEntitiesInTurnOrder = DetermineOrderOfAttacks();
+            DetermineOrderOfAttacks();
             currentTurnIndex = 0;
 
             currentState = BattleStates.START;
@@ -91,6 +95,10 @@ namespace MattScripts {
                         currentState = BattleStates.ENEMY_TURN;
                         EnemyAI();
                     }
+
+                    // We shift the turn indicator to be on the current character
+                    turnIndicator.transform.position = GetCurrentCharacterInTurnOrder().gameObject.transform.position;
+                    turnIndicator.transform.position += new Vector3(0,turnIndicatorYOffset,0);
                     break;
             }
         }
@@ -98,29 +106,28 @@ namespace MattScripts {
         // Determines the order of who goes first
         // First in array = fastest; last = slowest
         // Uses insertion sort
-        private BattleStats[] DetermineOrderOfAttacks()
+        private void DetermineOrderOfAttacks()
         {
-            BattleStats[] newOrder = FindObjectsOfType<BattleStats>();
-            for(int compareIndex = 0; compareIndex < newOrder.Length; ++compareIndex)
+            listOfAllEntitiesInTurnOrder = new List<BattleStats>(FindObjectsOfType<BattleStats>());
+            for(int compareIndex = 0; compareIndex < listOfAllEntitiesInTurnOrder.Count; ++compareIndex)
             {
-                for(int iteratorIndex = compareIndex + 1; iteratorIndex < newOrder.Length; ++iteratorIndex)
+                for(int iteratorIndex = compareIndex + 1; iteratorIndex < listOfAllEntitiesInTurnOrder.Count; ++iteratorIndex)
                 {
-                    if(newOrder[iteratorIndex].CompareSpeeds(newOrder[compareIndex]) == true)
+                    if(listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds(listOfAllEntitiesInTurnOrder[compareIndex]) == true)
                     {
-                        BattleStats temp = newOrder[iteratorIndex];
-                        newOrder[iteratorIndex] = newOrder[compareIndex];
-                        newOrder[compareIndex] = temp;
+                        BattleStats temp = listOfAllEntitiesInTurnOrder[iteratorIndex];
+                        listOfAllEntitiesInTurnOrder[iteratorIndex] = listOfAllEntitiesInTurnOrder[compareIndex];
+                        listOfAllEntitiesInTurnOrder[compareIndex] = temp;
                     }
                 }
             }
-            return newOrder;
         }
 
         // Spawns the party into battle.
         private void SpawnParty()
         {
             PlayerInventory playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
-            listOfAllParty = new BattleStats[playerInventory.GetPartyInvetorySize()];
+            listOfAllParty = new List<BattleStats>();
 
             int currLocationIndex = 0;
             for(int currIndex = 0; currIndex < playerInventory.GetPartyInvetorySize(); ++currIndex)
@@ -131,7 +138,7 @@ namespace MattScripts {
                                                                        playerInventory.GetInventoryCharacterAtIndex(currIndex).CurrentSkillPoints, 
                                                                        playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter.maxHealthPoints,
                                                                        playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter.maxSkillPoints);
-                listOfAllParty[currIndex] = partyMember.GetComponent<BattleStats>();
+                listOfAllParty.Add(partyMember.GetComponent<BattleStats>());
                 currLocationIndex++;
             }
         }
@@ -139,7 +146,7 @@ namespace MattScripts {
         // Spawns in enemies from the event
         private void SpawnEnemies()
         {
-            listOfAllEnemies = new BattleStats[currentBattleEvent.listOfEnemiesInFight.Count];
+            listOfAllEnemies = new List<BattleStats>();
 
             int currSpawnIndex = 0;
             foreach(EnemyData currentData in currentBattleEvent.listOfEnemiesInFight)
@@ -148,7 +155,7 @@ namespace MattScripts {
                 newEnemy.GetComponent<BattleStats>().battleData = currentData;
                 newEnemy.GetComponent<BattleStats>().InitializeHPSP(currentData.maxHealthPoints, currentData.maxSkillPoints);
 
-                listOfAllEnemies[currSpawnIndex] = newEnemy.GetComponent<BattleStats>();
+                listOfAllEnemies.Add(newEnemy.GetComponent<BattleStats>());
                 currSpawnIndex++;
             }
         }
@@ -161,18 +168,18 @@ namespace MattScripts {
             int enemyDeath = 0;
             foreach(BattleStats currEntity in listOfAllEntitiesInTurnOrder)
             {
-                if(currEntity.IsDead == true && currEntity.battleData is CharacterData)
+                if(currEntity.CurrentHP <= 0 && currEntity.battleData is CharacterData)
                 {
                     partyDeath++;
-                    if(partyDeath == listOfAllParty.Length)
+                    if(partyDeath == listOfAllParty.Count)
                     {
                         return -1;
                     }
                 }
-                else if(currEntity.IsDead == true && currEntity.battleData is EnemyData)
+                else if(currEntity.CurrentHP <= 0 && currEntity.battleData is EnemyData)
                 {
                     enemyDeath++;
-                    if(enemyDeath == listOfAllEnemies.Length)
+                    if(enemyDeath == listOfAllEnemies.Count)
                     {
                         return 1;
                     }
@@ -184,7 +191,7 @@ namespace MattScripts {
         // Returns the current character that is in the turn order
         public BattleStats GetCurrentCharacterInTurnOrder()
         {
-            if(currentTurnIndex < listOfAllEntitiesInTurnOrder.Length)
+            if(currentTurnIndex < listOfAllEntitiesInTurnOrder.Count)
             {
                 return listOfAllEntitiesInTurnOrder[currentTurnIndex];
             }
@@ -194,7 +201,7 @@ namespace MattScripts {
         // Gets a specific party member
         public BattleStats GetSpecificPartyMember(int index)
         {
-            if(index < 0 || index > listOfAllParty.Length)
+            if(index < 0 || index > listOfAllParty.Count)
             {
                 return null;
             }
@@ -207,7 +214,7 @@ namespace MattScripts {
         // Gets a specific enemy
         public BattleStats GetSpecificEnemy(int index)
         {
-            if(index < 0 || index > listOfAllEnemies.Length)
+            if(index < 0 || index > listOfAllEnemies.Count)
             {
                 return null;
             }
@@ -220,13 +227,13 @@ namespace MattScripts {
         // Returns the size of the entire party in battle
         public int GetPartySize()
         {
-            return listOfAllParty.Length;
+            return listOfAllParty.Count;
         }
 
         // Returns the size of the entire enemy side in battle
         public int GetEnemySize()
         {
-            return listOfAllEnemies.Length;
+            return listOfAllEnemies.Count;
         }
 
         // Performs an attack action using the current character on the targeted character
@@ -234,78 +241,106 @@ namespace MattScripts {
         {
             AttackData currentAttack = null;
             string nameOfAttacker = "";
+            string nameOfTarget = "";
             int damageDealt = 0;
 
             if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
             {
                 // Player atacks enemy
                 CharacterData currentCharacter = (CharacterData)GetCurrentCharacterInTurnOrder().battleData;
+                EnemyData targeted = (EnemyData)targetedCharacter.battleData;
+
                 currentAttack = currentCharacter.demonData.attackList[attackIndex];
                 nameOfAttacker = currentCharacter.characterName;
+                nameOfTarget = targeted.enemyName;
 
                 // Sets the text box to show the attack
                 battleUIController.ToggleActionBox(true, currentAttack.attackName);
 
                 // TODO: Associate animation with character
                 //GetCurrentCharacterInTurnOrder().gameObject.GetComponent<Animator> currentDemon.attackList[attackIndex].attackAnimation;
-                //yield return new WaitForSeconds(5f);
-
-                // Deal damage
-                damageDealt = targetedCharacter.DealDamage(GetCurrentCharacterInTurnOrder(), currentAttack);
-                yield return new WaitForSeconds(1);
             }
             else if(GetCurrentCharacterInTurnOrder().battleData is EnemyData)
             {
                 // Enemy attacks player
                 EnemyData currentEnemy = (EnemyData)GetCurrentCharacterInTurnOrder().battleData;
+                CharacterData targeted = (CharacterData)targetedCharacter.battleData;
+
                 currentAttack = currentEnemy.attackList[attackIndex];
                 nameOfAttacker = currentEnemy.enemyName;
+                nameOfTarget = targeted.characterName;
 
                 // Sets the text box to show the attack
                 battleUIController.ToggleActionBox(true, currentAttack.attackName);
 
                 // TODO: Associate animation with character
                 //GetCurrentCharacterInTurnOrder().gameObject.GetComponent<Animator> currentDemon.attackList[attackIndex].attackAnimation;
-                //yield return new WaitForSeconds(5f);
-
-                // Deal damage
-                damageDealt = targetedCharacter.DealDamage(GetCurrentCharacterInTurnOrder(), currentAttack);
-                yield return new WaitForSeconds(1);
             }
+            yield return new WaitForSeconds(1f);
 
-            // Change the box to reflect effectiveness
+            // Deal damage
+            damageDealt = targetedCharacter.DealDamage(GetCurrentCharacterInTurnOrder(), currentAttack);
             switch(targetedCharacter.GetAttackEffectiveness(currentAttack))
             {
+                case AffinityValues.NORMAL:
+                    battleUIController.ToggleActionBox(true, nameOfAttacker + " delt " + damageDealt + " damage to " + nameOfTarget + ".");
+                    break;
                 case AffinityValues.WEAK:
-                    battleUIController.ToggleActionBox(true, "Hit the weakness!");
+                    battleUIController.ToggleActionBox(true, nameOfAttacker + " hits " + nameOfTarget + "'s weakspot for " + damageDealt + " damage!");
                     break;
                 case AffinityValues.RESISTANT:
-                    battleUIController.ToggleActionBox(true, "Uh...that was not very effective...");
+                    battleUIController.ToggleActionBox(true, nameOfTarget + " resisted " + nameOfTarget + "'s move...only dealt " + damageDealt + " damage.");
                     break;
                 case AffinityValues.NULL:
-                    battleUIController.ToggleActionBox(true, "That did nothing!");
+                    battleUIController.ToggleActionBox(true, nameOfTarget + " is immune to " + nameOfTarget + "'s attack...did " + damageDealt + " damage.");
                     break;
             }
             yield return new WaitForSeconds(1f);
 
-            battleUIController.ToggleActionBox(true, nameOfAttacker + " did " + damageDealt + " damage!");
+            // Checks if the target is dead
+            if(targetedCharacter.CurrentHP <= 0)
+            {
+                battleUIController.ToggleActionBox(true, nameOfTarget + " is defeated!");
+
+                // We move it to the back of the line in the turn order and deactivate it.
+                if(targetedCharacter.battleData is CharacterData)
+                {
+                    targetedCharacter.gameObject.SetActive(false);
+                    listOfAllParty.Remove(targetedCharacter);
+                    listOfAllParty.Add(targetedCharacter);
+                }
+                else if(targetedCharacter.battleData is EnemyData)
+                {
+                    targetedCharacter.gameObject.SetActive(false);
+                    listOfAllEnemies.Remove(targetedCharacter);
+                    listOfAllEnemies.Add(targetedCharacter);
+                }
+                listOfAllEntitiesInTurnOrder.Remove(targetedCharacter);
+                listOfAllEntitiesInTurnOrder.Add(targetedCharacter);
+            }
             yield return new WaitForSeconds(1f);
-
-            // Check if the target is dead
-            targetedCharacter.CheckIfDead();
-
-            // Hide box
-            battleUIController.ToggleActionBox(false);
-            yield return null;
 
             // We check if a side is wiped, else we continue
             switch(CheckWhoWon())
             {
                 case 0:
-                    // No one lost yet so We then increment the turn order and change to the next turn
+                    // No one lost yet so we then increment the turn order and change to the next turn
                     SetCurrentTurnOrder = currentTurnIndex + 1;
+                    while(GetCurrentCharacterInTurnOrder().CurrentHP <= 0)
+                    {
+                        SetCurrentTurnOrder = currentTurnIndex + 1;
+                    }
+
+                    // We shift the turn indicator to be on the current character
+                    turnIndicator.transform.position = GetCurrentCharacterInTurnOrder().gameObject.transform.position;
+                    turnIndicator.transform.position += new Vector3(0,turnIndicatorYOffset,0);
+
                     if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
                     {
+                        // Hide action box
+                        battleUIController.ToggleActionBox(false);
+                        yield return null;
+
                         battleUIController.ShowMenus();
                         currentState = BattleStates.PLAYER_TURN;
                     }
@@ -364,6 +399,11 @@ namespace MattScripts {
 
             // We then increment the turn order and change to the next turn
             SetCurrentTurnOrder = currentTurnIndex + 1;
+
+            // We shift the turn indicator to be on the current character
+            turnIndicator.transform.position = GetCurrentCharacterInTurnOrder().gameObject.transform.position;
+            turnIndicator.transform.position += new Vector3(0,turnIndicatorYOffset,0);
+
             if(GetCurrentCharacterInTurnOrder().battleData is CharacterData)
             {
                 battleUIController.ShowMenus();
@@ -387,11 +427,11 @@ namespace MattScripts {
             {
                 // We then decide on a random attack and a random target
                 int randAttackIndex = Random.Range(0, ((EnemyData)GetCurrentCharacterInTurnOrder().battleData).attackList.Count);
-                int randPartyMember = Random.Range(0, listOfAllParty.Length);
+                int randPartyMember = Random.Range(0, listOfAllParty.Count);
 
-                while(GetSpecificPartyMember(randPartyMember).IsDead == true)
+                while(GetSpecificPartyMember(randPartyMember).CurrentHP <= 0)
                 {
-                    randPartyMember = Random.Range(0, listOfAllParty.Length);
+                    randPartyMember = Random.Range(0, listOfAllParty.Count);
                 }
 
                 // We then call PerformAttackAction

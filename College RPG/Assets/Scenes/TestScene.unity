@@ -1060,7 +1060,7 @@ Transform:
   m_Children:
   - {fileID: 1324779949}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &540865380
 GameObject:
@@ -1221,11 +1221,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 568410852}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 57.619995, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_Father: {fileID: 889026255}
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &624423099
 GameObject:
@@ -1802,7 +1802,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 889026255}
-  m_RootOrder: 4
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &889026254
 GameObject:
@@ -1833,11 +1833,13 @@ Transform:
   - {fileID: 1737168673}
   - {fileID: 1020560015}
   - {fileID: 1752495292}
-  - {fileID: 883906838}
+  - {fileID: 1366863489}
   - {fileID: 2137659876}
   - {fileID: 624423101}
   - {fileID: 1376826950}
   - {fileID: 426392020}
+  - {fileID: 568410854}
+  - {fileID: 883906838}
   m_Father: {fileID: 232871935}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2483,13 +2485,37 @@ MonoBehaviour:
   endDialogueEvent: {fileID: 1625215375}
   associatedCutscene: {fileID: 0}
   listOfDialogue:
+  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
+    nameText: Narrator
+    choiceText: 
+    dialogueText: It's dangerous to go alone. Have a party member!
+    delayTime: 0
+    endEvent: {fileID: 568410853}
+    nodeId: 0
+    childrenNodeIds: 01000000
+  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
+    nameText: Narrator
+    choiceText: 
+    dialogueText: And an item!
+    delayTime: 0
+    endEvent: {fileID: 1366863488}
+    nodeId: 1
+    childrenNodeIds: 02000000
+  - portrait: {fileID: 21300000, guid: 1d0c184845252df44a655359de388cb8, type: 3}
+    nameText: Narrator
+    choiceText: 
+    dialogueText: Why not, let's make this easy for you.
+    delayTime: 0
+    endEvent: {fileID: 883906837}
+    nodeId: 2
+    childrenNodeIds: 03000000
   - portrait: {fileID: 21300000, guid: cbbabe9e292f5604897926494bb38fef, type: 3}
     nameText: THE ENEMY
     choiceText: 
     dialogueText: ITS TIME TO DU-DUE-Due-DUUUEELLLLL!
     delayTime: 0
     endEvent: {fileID: 0}
-    nodeId: 0
+    nodeId: 3
     childrenNodeIds: 
   selectChoiceHighlight: {fileID: 11400000, guid: 1cc3a810285fe4693978f2e55394b4cf,
     type: 2}
@@ -2725,11 +2751,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1366863487}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.94, y: -56.6, z: 8.43}
+  m_LocalPosition: {x: 8.94, y: 1.0199966, z: 8.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_Father: {fileID: 889026255}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1370909178
 GameObject:
@@ -3309,7 +3335,7 @@ Transform:
   m_Children:
   - {fileID: 745993485}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1625215375
 MonoBehaviour:
@@ -3331,6 +3357,8 @@ MonoBehaviour:
   gameOverIndex: 5
   respawnPlayerLocation: {fileID: 745993485}
   listOfEnemiesInFight:
+  - {fileID: 11400000, guid: 081c2f0728f9d4864bcf484b3b092e0e, type: 2}
+  - {fileID: 11400000, guid: 081c2f0728f9d4864bcf484b3b092e0e, type: 2}
   - {fileID: 11400000, guid: 081c2f0728f9d4864bcf484b3b092e0e, type: 2}
 --- !u!114 &1625215376
 MonoBehaviour:

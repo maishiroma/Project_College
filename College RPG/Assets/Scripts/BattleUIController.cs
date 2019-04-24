@@ -117,8 +117,12 @@ namespace MattScripts {
                 if(Input.GetButtonDown(selectInput))
                 {
                     Debug.Log("We selected " + currentMenuParent.GetChild(currentMenuIndex).GetComponent<TextMeshProUGUI>().text);
-                    SelectOption();
-                    UpdateMenuContext();
+
+                    bool success = SelectOption();
+                    if(success == true)
+                    {
+                        UpdateMenuContext();
+                    }
                 }
                 // Logic for returning to the last selected item
                 else if(Input.GetButtonDown(cancelInput))
@@ -179,9 +183,27 @@ namespace MattScripts {
         }
 
         // Depending what state we are in, we handle how to handle the menu logic from here after selecting something
-        private void SelectOption()
+        // Returns true if we were able to get a successful option
+        private bool SelectOption()
         {
+            // We first check if we have any special cases before an option is selected. If we meet any, we exit out of the method early
+            switch(currentState)
+            {
+                case BattleMenuStates.SPECIAL:
+                    if(battleController.GetCurrentCharacterInTurnOrder().CheckIfCanUseAttack(currentMenuIndex) == false)
+                    {
+                        // If we are selecting a special move, but we don't have enough sp, we prevent the player from using it
+                        descText.text = "Can't use that attack! Not enough SP!";
+                        return false;
+                    }
+                    break;
+            }
+
+            // Once we reach here, we will presume that the option will work
+            // So we set up the next menus for the new context
             ChangeSelectedText(currentMenuIndex, -1);
+            DeactivateSubMenuItems();
+
             switch(currentState)
             {
                 case BattleMenuStates.MAIN:
@@ -199,7 +221,7 @@ namespace MattScripts {
                     else if(currentMenuIndex == 1)
                     {
                         // We select the special option
-                        FillSubMenu((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData);
+                        FillSubMenu(battleController.GetCurrentCharacterInTurnOrder());
                         currentState = BattleMenuStates.SPECIAL;
                     }
                     else
@@ -217,16 +239,8 @@ namespace MattScripts {
                     break;
                 case BattleMenuStates.SPECIAL:
                     // We have confirmed what special attack we want to do
-                    if(((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData).demonData.attackList[currentMenuIndex].attackCost <= battleController.GetCurrentCharacterInTurnOrder().CurrentSP)
-                    {
-                        DeactivateSubMenuItems();
-                        FillEnemyTargetMenu();
-                        currentState = BattleMenuStates.SPECIAL_TARGET;   
-                    }
-                    else
-                    {
-                        Debug.Log("Can't select that, not enough SP!");
-                    }
+                    FillEnemyTargetMenu();
+                    currentState = BattleMenuStates.SPECIAL_TARGET; 
                     break;
                 case BattleMenuStates.SPECIAL_TARGET:
                     // We have confirmed our target to hit our attack on
@@ -236,7 +250,6 @@ namespace MattScripts {
                     break;
                 case BattleMenuStates.ITEM:
                     // We confirmed what item to use
-                    DeactivateSubMenuItems();
                     FillPartyTargetMenu();
                     currentState = BattleMenuStates.ITEM_TARGET;
                     break;
@@ -251,6 +264,7 @@ namespace MattScripts {
             prevIndexMenus.Push(currentMenuIndex);
             currentMenuIndex = 0;
             ChangeSelectedText(currentMenuIndex, 0);
+            return true;
         }
 
         // Depending on where we are, we hop back to the previous option
@@ -275,7 +289,7 @@ namespace MattScripts {
                         currentState = BattleMenuStates.ITEM;
                         break;
                     case BattleMenuStates.SPECIAL_TARGET:
-                        FillSubMenu((CharacterData)battleController.GetCurrentCharacterInTurnOrder().battleData);
+                        FillSubMenu(battleController.GetCurrentCharacterInTurnOrder());
                         currentState = BattleMenuStates.SPECIAL;
                         break;
                 }
@@ -302,12 +316,14 @@ namespace MattScripts {
                 }
             }
         }
-        private void FillSubMenu(CharacterData currentPartyMember)
+        private void FillSubMenu(BattleStats currentEntity)
         {
             // We extract the attack data from the demon and fill in the menu
-            for(int currIndex = 0; currIndex < currentPartyMember.demonData.attackList.Count; ++currIndex)
+            CharacterData currentCharacter = (CharacterData)currentEntity.battleData;
+
+            for(int currIndex = 0; currIndex < currentCharacter.demonData.attackList.Count; ++currIndex)
             {
-                AttackData currAttack = currentPartyMember.demonData.attackList[currIndex];
+                AttackData currAttack = currentCharacter.demonData.attackList[currIndex];
                 currentMenuParent.GetChild(currIndex).GetComponent<TextMeshProUGUI>().text = currAttack.attackName;
                 currentMenuParent.GetChild(currIndex).gameObject.SetActive(true);
             }
@@ -329,7 +345,7 @@ namespace MattScripts {
         {
             for(int currEnemyIndex = 0; currEnemyIndex < battleController.GetEnemySize(); ++currEnemyIndex)
             {
-                if(battleController.GetSpecificEnemy(currEnemyIndex).IsDead == false)
+                if(battleController.GetSpecificEnemy(currEnemyIndex).CurrentHP > 0)
                 {
                     EnemyData currCharacter = (EnemyData)battleController.GetSpecificEnemy(currEnemyIndex).battleData;
                     currentMenuParent.GetChild(currEnemyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.enemyName;
@@ -385,7 +401,7 @@ namespace MattScripts {
                 }
             }
         }
-    
+
         // This hides the main commands, the description box, and the sub box when called
         // This does NOT hide the action box
         public void HideMenus()

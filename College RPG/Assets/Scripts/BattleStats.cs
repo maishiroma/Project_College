@@ -18,7 +18,6 @@ namespace MattScripts {
         private int maxHP;
         private int currentSP;
         private int maxSP;
-        private bool isDead;
 
         public int CurrentHP {
             get { return currentHP; }
@@ -55,21 +54,6 @@ namespace MattScripts {
                 }
             }
         }
-
-        public bool IsDead {
-            get { return isDead;}
-            set {
-                if(currentHP <= 0)
-                {
-                    isDead = true;
-                }
-                else
-                {
-                    isDead = value;
-                }
-            }
-        }
-
 
         // We initialize both HP/SP to what is passed
         public void InitializeHPSP(int newHP, int newSP, int newMaxHP, int newMaxSP)
@@ -244,17 +228,21 @@ namespace MattScripts {
             return finalDamage;
         }
 
-        // Check if the player is dead
-        public bool CheckIfDead()
+        // Returns true if the entity can use this attack
+        public bool CheckIfCanUseAttack(int attackIndex)
         {
-            if(currentHP <= 0)
+            AttackData currentAttack = null;
+            if(battleData is CharacterData)
             {
-                // One of the player characters is dead, so we deactivate them
-                // For now, we hide the enemy sprite
-                isDead = true;
-                gameObject.GetComponentInChildren<SpriteRenderer>().enabled = false;
+                currentAttack = ((CharacterData)battleData).demonData.attackList[attackIndex];
+            }
+            else if(battleData is EnemyData)
+            {
+                currentAttack = ((EnemyData)battleData).attackList[attackIndex];
+            }
 
-                // TODO: Do some animation of the character dying
+            if(CurrentSP > currentAttack.attackCost)
+            {
                 return true;
             }
             return false;
