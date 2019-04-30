@@ -113,7 +113,11 @@ namespace MattScripts {
             {
                 for(int iteratorIndex = compareIndex + 1; iteratorIndex < listOfAllEntitiesInTurnOrder.Count; ++iteratorIndex)
                 {
-                    if(listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds(listOfAllEntitiesInTurnOrder[compareIndex]) == true)
+                    bool checkIfOtherIsParty = (listOfAllEntitiesInTurnOrder[compareIndex].battleData is CharacterData && listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds((CharacterData)listOfAllEntitiesInTurnOrder[compareIndex].battleData) == true);
+                    bool checkIfOtherIsEnemy = (listOfAllEntitiesInTurnOrder[compareIndex].battleData is EnemyData && listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds((EnemyData)listOfAllEntitiesInTurnOrder[compareIndex].battleData) == true);
+
+                    // We check to see if we the current entity is faster than the current iterator
+                    if (checkIfOtherIsParty == true || checkIfOtherIsEnemy == true)
                     {
                         BattleStats temp = listOfAllEntitiesInTurnOrder[iteratorIndex];
                         listOfAllEntitiesInTurnOrder[iteratorIndex] = listOfAllEntitiesInTurnOrder[compareIndex];
@@ -358,6 +362,7 @@ namespace MattScripts {
                     yield return new WaitForSeconds(2f);
 
                     currentState = BattleStates.PLAYER_WIN;
+                    currentBattleEvent.PostBattleActions(listOfAllParty);
                     currentBattleEvent.EventOutcome();
                     break;
                 case -1:

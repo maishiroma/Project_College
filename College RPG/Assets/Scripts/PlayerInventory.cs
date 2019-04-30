@@ -135,9 +135,6 @@ namespace MattScripts {
             this.currentHealthPoints = newCharacter.maxHealthPoints;
             this.currentSkillPoints = newCharacter.maxSkillPoints;
         }
-
-        // TODO: Need to make a level up function that augments the player's stats.
-        // TODO: Need to have a way to dynamically calculate the player's stats during battle.
     }
 
     // The object that encapsulates links in a list

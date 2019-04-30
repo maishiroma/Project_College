@@ -2,8 +2,6 @@
  * 
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -12,7 +10,7 @@ namespace MattScripts {
     public class GameOverController : MonoBehaviour {
 
         [Header("UI Variables")]
-        public GameObject gameOverUI;
+        public GameObject gameOverUI;                                   // Hard reference to the UI that controls the GameOver UI
         public TMP_ColorGradient selectChoiceHighlight;                 // Reference to the ColorGradiant used to showcase which text the player has selected
 
         [Header("Input Variables")]

@@ -1,8 +1,7 @@
-﻿/*  This script handles taking the player from the main gameplay to the battle scene
- * 
+﻿/*  This script handles taking the player from the main gameplay to the battle scene and vice verse.
+ *  By default, the gameobject/script should be deactivated
  */
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,17 +11,16 @@ namespace MattScripts {
     [RequireComponent(typeof(TransitionArea))]
     public class BattleEvent : BaseEvent
     {
-        // TODO: Determine how EXP and gold are rewarded after fight
         [Header("Sub Variables")]
-        public int gameOverIndex = 5;
-        public Transform respawnPlayerLocation;
-        public List<EnemyData> listOfEnemiesInFight;
+        public int gameOverIndex = 5;                       // The scene index that the game over scene is at. 
+        public Transform respawnPlayerLocation;             // The location that the player will respawn at when the battle is over
+        public List<EnemyData> listOfEnemiesInFight;        // A list of all of the enemies that the event will spawn in the battle
 
         // Private Variables
-        private int origSceneIndex;
-        private Vector3 origCameraLocation;
-        private Quaternion origCameraRotation;
+        private int origSceneIndex;                         // A reference to the original scene that the player was originally in
 
+        private Vector3 origCameraLocation;                 // Hard references to the player camera and values that the camera was before the battle
+        private Quaternion origCameraRotation;
         private float origCameraMinX;                
         private float origCameraMaxX;
         private float origCameraMinY;
@@ -30,7 +28,7 @@ namespace MattScripts {
         private float origCameraMinZ;
         private float origCameraMaxZ;
 
-        // Upon activating, we start up the battle.
+        // When this event is activated, we start up the battle.
 		private void OnEnable()
 		{
             if(hasActivated == false)
@@ -78,7 +76,7 @@ namespace MattScripts {
                 }
                 else if(controller.CurrentState == BattleStates.PLAYER_WIN)
                 {
-                    // TODO: We first reward the player with their rewards 
+                    // TODO: We first reward the player with their rewards as well as mark this event being completed permenatly.
 
                     // And then warp them back using the saved coords and deactivate this event.
                     StartCoroutine(gameObject.GetComponent<TransitionArea>().GoToSpecificScene(origSceneIndex));
@@ -86,6 +84,26 @@ namespace MattScripts {
             }
         }
     
+        // Saves the new information to the player's party and rewards them exp and gold
+        public void PostBattleActions(List<BattleStats> currentPlayerPartyInBattle)
+        {
+            PlayerInventory currentParty = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
+
+            foreach(BattleStats currentPartyMember in currentPlayerPartyInBattle)
+            {
+                CharacterData comparedPartyMember = (CharacterData)currentPartyMember.battleData;
+                for(int currPartyIndex = 0; currPartyIndex < currentParty.GetPartyInvetorySize(); currPartyIndex++)
+                {
+                    // We check if we are looking at the same character
+                    if(comparedPartyMember.characterName == currentParty.GetInventoryCharacterAtIndex(currPartyIndex).SpecifiedCharacter.characterName)
+                    {
+                        // We save the HP/SP that the character has to the inventory
+                        currentPartyMember.SaveCurrentHPSP(currentParty.GetInventoryCharacterAtIndex(currPartyIndex));
+                    }
+                }
+            }
+        }
+
         // We reset the player and camera to what they were based on what we saved prior
         public void ResetPlayerAndCamera()
         {
