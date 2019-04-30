@@ -3,7 +3,6 @@
  */
 
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -20,7 +19,6 @@ namespace MattScripts {
         public DialogueNode[] listOfDialogue;           // Array of all of the DialogueNodes that correspond to this event
 
         [Header("Sub UI Variables")]
-        public GameObject playerChoiceUI;               // Reference to the Player Choice UI that contains the UI for player decisions
         public TMP_ColorGradient selectChoiceHighlight; // Reference to the ColorGradiant used to showcase which text the player has selected
 
         // Private Variables
@@ -46,15 +44,15 @@ namespace MattScripts {
         // Caches the dialouge and image components for future use
 		private void Start()
 		{
-            // The childs in here may change depending on the ordering of the GameObjects in the UI scene
-            portaitUI = objectToInteract.transform.GetChild(0).GetComponent<Image>();
-            dialogueUI = objectToInteract.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            proceedIconUI = objectToInteract.transform.GetChild(3).GetComponent<Image>();
-            nameUI = objectToInteract.transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>();
-            dialogueWindowAnimator = objectToInteract.GetComponent<Animator>();
+            // IMPORTANT: The childs in here may change depending on the ordering of the GameObjects in the UI scene!
+            portaitUI = objectToInteract.transform.GetChild(0).GetChild(0).GetComponent<Image>();
+            dialogueUI = objectToInteract.transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>();
+            proceedIconUI = objectToInteract.transform.GetChild(0).GetChild(3).GetComponent<Image>();
+            nameUI = objectToInteract.transform.GetChild(0).GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>();
+            dialogueWindowAnimator = objectToInteract.transform.GetChild(0).GetComponent<Animator>();
 
-            choiceBoxUI = playerChoiceUI.transform.GetChild(1);
-            choiceWindowAnimator = playerChoiceUI.GetComponent<Animator>();
+            choiceBoxUI = objectToInteract.transform.GetChild(1).GetChild(1);
+            choiceWindowAnimator = objectToInteract.transform.GetChild(1).GetComponent<Animator>();
 		}
 
 		// Displays the given text to the UI, if the event is activated
@@ -141,12 +139,17 @@ namespace MattScripts {
             // If we have a cutscene associated with this dialogue, we do NOT reset this event or the game state
             // The reason is that the the cutscene itself will script when the cutscene is over
             // So unless we are a standalone dialogue, we do not reset the game state or this event
-            if(associatedCutscene == null)
+            if(endDialogueEvent.GetType() != typeof(TransitionArea))
             {
-                GameManager.Instance.CurrentState = GameStates.NORMAL;
-                Invoke("ResetEvent", 0.5f);
+                // NOTE that if we have a transition area, we do NOT allow it to reset the game state
+                if(associatedCutscene == null)
+                {
+                    GameManager.Instance.CurrentState = GameStates.NORMAL;
+                    Invoke("ResetEvent", 0.5f);
+                }
             }
             HideDialogueBox();
+            isFinished = true;
         }
 
 		// When called, will hide the dialogue box and pause the dialogue
@@ -182,7 +185,7 @@ namespace MattScripts {
         // If we have choices, we fill them out with whatever dialogue node we are on.
         private void FillOptions()
         {
-            if(playerChoiceUI != null && listOfDialogue[currentDialogueId].CheckIfChildrenExist())
+            if(listOfDialogue[currentDialogueId].CheckIfChildrenExist())
             {
                 // We reset these two vars to 0, since we are filling in new options
                 numbOfAvailableChoices = 0;
@@ -220,7 +223,6 @@ namespace MattScripts {
             }
             choiceBoxUI.GetChild(currChoiceIndex).GetComponent<TextMeshProUGUI>().colorGradientPreset = null;
             choiceWindowAnimator.SetBool("isOpen", false);
-            hasShownChoices = false;
         }
 
         // Helper method that changes the two texts in the Choice Box at the specified indexes to change gradiants
@@ -260,7 +262,7 @@ namespace MattScripts {
             portaitUI.sprite = listOfDialogue[currentDialogueId].DialoguePortrait;
             nameUI.text = listOfDialogue[currentDialogueId].DialogueName;
             proceedIconUI.enabled = false;
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             // The actual place where the "animation" occues
             for(currCharIndex = 0; currCharIndex < listOfDialogue[currentDialogueId].DialogueText.Length; ++currCharIndex)
@@ -270,14 +272,14 @@ namespace MattScripts {
             }
             // We then fill in the rest of the dialogue
             dialogueUI.text = listOfDialogue[currentDialogueId].DialogueText;
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             // If we have choices present, we activate them here
             if(listOfDialogue[currentDialogueId].CheckIfMultipleChilrenExist())
             {
                 ClearOptions();
                 FillOptions();
-                yield return new WaitForEndOfFrame();
+                yield return null;
             }
 
             // We then enable the rest of the window to appear
@@ -293,11 +295,11 @@ namespace MattScripts {
             // As such, we can use the currentChoiceIndex to get the approperiate child id to use to advance the dialogue
             currentDialogueId = listOfDialogue[currentDialogueId].GetChildIdAtIndex(currChoiceIndex);
             ClearOptions();
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             PlayNextDialogue();
             hasShownChoices = false;
-            yield return new WaitForEndOfFrame();
+            yield return null;
         }
     
         // Plays out an event if the specific dialogue node has one
@@ -307,7 +309,7 @@ namespace MattScripts {
             {
                 hasFinishedEvents = false;
                 listOfDialogue[currentDialogueId].ActivateEvent();
-                while(listOfDialogue[currentDialogueId].DialogueEvent.HasActivated == false)
+                while(listOfDialogue[currentDialogueId].DialogueEvent.IsFinished == false)
                 {
                     yield return null;
                 }
@@ -323,12 +325,14 @@ namespace MattScripts {
         {
             if(endDialogueEvent.HasActivated == false)
             {
+                HideDialogueBox();
                 endDialogueEvent.gameObject.SetActive(true);
-                yield return null;
+                while(endDialogueEvent.IsFinished == false)
+                {
+                    yield return null;
+                }
             }
-
             EventOutcome();
-            yield return null;
         }
     
         // Delays the current dialogue from showing immediatly. Used in tangent with a cutscene
@@ -341,7 +345,7 @@ namespace MattScripts {
 
             // When the time is up, we pause the cutscene
             associatedCutscene.ChangeCutsceneState("Pause");
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             // And then we show the dialogue options
             ShowDialogueBox();

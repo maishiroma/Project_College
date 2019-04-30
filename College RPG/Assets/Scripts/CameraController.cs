@@ -5,8 +5,6 @@
  * Compare Layer with a LayerMask : https://answers.unity.com/questions/422472/how-can-i-compare-colliders-layer-to-my-layermask.html
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MattScripts {
@@ -14,7 +12,6 @@ namespace MattScripts {
     public class CameraController : MonoBehaviour {
 
         [Header("General Variables")]
-        [HideInInspector]
         public Transform objectToFollow;
         public LayerMask solidSurfaceLayer;
 

@@ -11,21 +11,57 @@ namespace MattScripts {
     // The object that encapsulates items in the list
     [System.Serializable]
     public class InventoryItem {
-        public ItemData specifiedItem;
-        public int quantity;            // How much of this one item is in the list?
+        private ItemData specifiedItem;
+        private int quantity;            // How much of this one item is in the list?
+
+        public ItemData SpecifiedItem {
+            get {return specifiedItem;}
+        }
+
+        public int Quantity {
+            get {return quantity;}
+            set {
+                if(value < 0)
+                {
+                    quantity = 0;
+                }
+                else
+                {
+                    quantity = value;
+                }
+            }
+        }
 
         public InventoryItem(ItemData newItem, int quantity)
         {
             this.specifiedItem = newItem;
             this.quantity = quantity;
         }
-    }
+	}
 
     // The object that encapsulates gear in a list
     [System.Serializable]
     public class InventoryGear {
-        public GearData specifiedGear;
-        public int quantity = 0;            // How much of this one item is in the list?
+        private GearData specifiedGear;
+        private int quantity = 0;            // How much of this one item is in the list?
+
+        public GearData SpecifiedGear {
+            get {return specifiedGear;}
+        }
+
+        public int Quantity {
+            get {return quantity;}
+            set {
+                if(value < 0)
+                {
+                    quantity = 0;
+                }
+                else
+                {
+                    quantity = value;
+                }
+            }
+        }
 
         public InventoryGear(GearData newGear, int quantity)
         {
@@ -37,11 +73,60 @@ namespace MattScripts {
     // The object that encapsulates characters in a list
     [System.Serializable]
     public class InventoryParty {
-        public CharacterData specifiedCharacter;
+        private CharacterData specifiedCharacter;
+        private int characterLevel = 1;             // All of these values are used in leveling up and maintaining a copy of the original data
+        private int currentHealthPoints = 0;
+        private int currentSkillPoints = 0;
 
-        public int characterLevel = 1;    // All of these values are used in leveling up and maintaining a copy of the original data
-        public int currentHealthPoints = 0;
-        public int currentSkillPoints = 0;
+        public CharacterData SpecifiedCharacter {
+            get {return specifiedCharacter;}
+        }
+
+        public int CharacterLevel {
+            get {return characterLevel;}
+            set {
+                if(value > 0 && value < 101)
+                {
+                    characterLevel = value;
+                }
+            }
+        }
+
+        public int CurrentHealthPoints {
+            get {return currentHealthPoints;}
+            set {
+                if(value < 0)
+                {
+                    currentHealthPoints = 0;
+                }
+                else if(value > specifiedCharacter.maxHealthPoints)
+                {
+                    currentHealthPoints = specifiedCharacter.maxHealthPoints;
+                }
+                else
+                {
+                    currentHealthPoints = value;
+                }
+            }
+        }
+
+        public int CurrentSkillPoints {
+            get {return currentSkillPoints;}
+            set {
+                if(value < 0)
+                {
+                    currentSkillPoints = 0;
+                }
+                else if(value > specifiedCharacter.maxSkillPoints)
+                {
+                    currentSkillPoints = specifiedCharacter.maxSkillPoints;
+                }
+                else
+                {
+                    currentSkillPoints = value;
+                }
+            }
+        }
 
         public InventoryParty(CharacterData newCharacter)
         {
@@ -50,17 +135,27 @@ namespace MattScripts {
             this.currentHealthPoints = newCharacter.maxHealthPoints;
             this.currentSkillPoints = newCharacter.maxSkillPoints;
         }
-
-        // TODO: Need to make a level up function that augments the player's stats.
-        // TODO: Need to have a way to dynamically calculate the player's stats during battle.
     }
 
     // The object that encapsulates links in a list
     [System.Serializable]
     public class InventoryLink {
-        public LinkData specifiedLink;
+        private LinkData specifiedLink;
+        private int linkLevel = 1;
 
-        public int linkLevel = 1;
+        public LinkData SpecifiedLink {
+            get {return specifiedLink;}
+        }
+
+        public int LinkLevel {
+            get {return linkLevel;}
+            set {
+                if(value > 0 && value < 10)
+                {
+                    linkLevel = value;
+                }
+            }
+        }
 
         public InventoryLink(LinkData newLink)
         {
@@ -85,6 +180,8 @@ namespace MattScripts {
             listOfGear = new List<InventoryGear>();
             listOfPartyMembers = new List<InventoryParty>();
             listOfLinks = new List<InventoryLink>();
+
+            // TODO: Make sure to add in one value for the party inventory representing the player
 		}
 
         // Adds an item to an inventory
@@ -94,9 +191,9 @@ namespace MattScripts {
             foreach(InventoryItem currItem in listOfItems)
             {
                 // If this item already exists in the list, we update the quantity
-                if(currItem.specifiedItem.Equals(newItem.specifiedItem))
+                if(currItem.SpecifiedItem.Equals(newItem.SpecifiedItem))
                 {
-                    currItem.quantity += newItem.quantity;
+                    currItem.Quantity += newItem.Quantity;
                     return;
                 }
             }
@@ -109,9 +206,9 @@ namespace MattScripts {
             foreach(InventoryGear currGear in listOfGear)
             {
                 // If this gear already exists in the list, we update the quantity
-                if(currGear.specifiedGear.Equals(newGear.specifiedGear))
+                if(currGear.SpecifiedGear.Equals(newGear.SpecifiedGear))
                 {
-                    currGear.quantity += newGear.quantity;
+                    currGear.Quantity += newGear.Quantity;
                     return;
                 }
             }
@@ -143,13 +240,13 @@ namespace MattScripts {
             {
                 InventoryItem currItem = listOfItems[itemIndex];
 
-                if(currItem.quantity - quantity < 0)
+                if(currItem.Quantity - quantity <= 0)
                 {
                     listOfItems.Remove(currItem);
                 }
                 else
                 {
-                    currItem.quantity -= quantity;
+                    currItem.Quantity -= quantity;
                 }
                 return currItem;
             }
@@ -162,10 +259,10 @@ namespace MattScripts {
             foreach(InventoryItem currItem in listOfItems)
             {
                 // If this item already exists in the list, we update the quantity
-                if(currItem.specifiedItem.Equals(specificItem.specifiedItem))
+                if(currItem.SpecifiedItem.Equals(specificItem.SpecifiedItem))
                 {
-                    currItem.quantity -= quantity;
-                    if(currItem.quantity < 0)
+                    currItem.Quantity -= quantity;
+                    if(currItem.Quantity <= 0)
                     {
                         listOfItems.Remove(currItem);    
                     }
@@ -183,13 +280,13 @@ namespace MattScripts {
             {
                 InventoryGear currGear = listOfGear[gearIndex];
 
-                if(currGear.quantity - quantity < 0)
+                if(currGear.Quantity - quantity < 0)
                 {
                     listOfGear.Remove(currGear);
                 }
                 else
                 {
-                    currGear.quantity -= quantity;
+                    currGear.Quantity -= quantity;
                 }
                 return true;
             }
@@ -202,10 +299,10 @@ namespace MattScripts {
             foreach(InventoryGear currGear in listOfGear)
             {
                 // If this gear already exists in the list, we update the quantity
-                if(currGear.specifiedGear.Equals(specificGear.specifiedGear))
+                if(currGear.SpecifiedGear.Equals(specificGear.SpecifiedGear))
                 {
-                    currGear.quantity -= quantity;
-                    if(currGear.quantity < 0)
+                    currGear.Quantity -= quantity;
+                    if(currGear.Quantity <= 0)
                     {
                         listOfGear.Remove(currGear);    
                     }
@@ -215,46 +312,46 @@ namespace MattScripts {
             return false;
         }
 
-        // Returns the itemdata at the specified index point
+        // Returns the item at the specified index point
         // Returns null if it cannot find that item
-        public ItemData GetItemAtIndex(int index)
+        public InventoryItem GetItemAtIndex(int index)
         {
             if(index < listOfItems.Count && index >= 0)
             {
-                return listOfItems[index].specifiedItem;
+                return listOfItems[index];
             }
             return null;
         }
 
-        // Returns the gearData at the specified index
+        // Returns the gear at the specified index
         // returns null if it cannot find that gear
-        public GearData GetGearAtIndex(int index)
+        public InventoryGear GetGearAtIndex(int index)
         {
             if(index < listOfGear.Count && index >= 0)
             {
-                return listOfGear[index].specifiedGear;
+                return listOfGear[index];
             }
             return null;
         }
 
-        // Returns the character data at X index
-        // Returns null if the index is invalid
-        public CharacterData GetCharacterAtIndex(int index)
+        // Returns the character at the specified index
+        // returns null if it cannot find that character
+        public InventoryParty GetInventoryCharacterAtIndex(int index)
         {
             if(index < listOfPartyMembers.Count && index >= 0)
             {
-                return listOfPartyMembers[index].specifiedCharacter;
+                return listOfPartyMembers[index];
             }
             return null;
         }
 
-        // Returns the link data at X index
+        // Returns the link at X index
         // Returns null if the index is invalid
-        public LinkData GetLinkAtIndex(int index)
+        public InventoryLink GetLinkAtIndex(int index)
         {
             if(index < listOfLinks.Count && index >= 0)
             {
-                return listOfLinks[index].specifiedLink;
+                return listOfLinks[index];
             }
             return null;
         }

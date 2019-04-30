@@ -116,6 +116,7 @@ namespace MattScripts {
                 GameManager.Instance.MainCamera.LoadSavedTransform();
                 GameManager.Instance.MainCamera.objectToFollow = GameManager.Instance.PlayerReference.transform;
             }
+            isFinished = true;
             EventOutcome();
         }
     }

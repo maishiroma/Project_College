@@ -8,16 +8,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3799099b2fa09413d881fad0d01ed48c, type: 3}
-  m_Name: TestDemon
+  m_Script: {fileID: 11500000, guid: 2b32e1b314eea45549b7eb6bd7f95eeb, type: 3}
+  m_Name: TestEnemy1
   m_EditorClassIdentifier: 
-  demonName: Bobobob
+  enemySprite: {fileID: 0}
+  enemyName: Dummy Dude
+  maxHealthPoints: 100
+  maxSkillPoints: 100
   phyAttackStat: 10
-  phyDefenseStat: 14
-  spAttackStat: 20
+  phyDefenseStat: 10
+  spAttackStat: 10
   spDefenseStat: 10
-  spdStat: 10
-  luckStat: 7
+  spdStat: 5
+  luckStat: 3
   affinityArray: 0000000000000000000000000000000000000000000000000000000000000000
   attackList:
   - {fileID: 11400000, guid: f0dffe808e3194c168511e344046e489, type: 2}

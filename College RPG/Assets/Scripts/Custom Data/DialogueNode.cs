@@ -2,8 +2,6 @@
  *  Contains useful methods and variables that allow for the streamlineing of setting this up.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MattScripts {
@@ -169,7 +167,7 @@ namespace MattScripts {
         {
             if(CheckIfEventExists())
             {
-                return endEvent.HasActivated;   
+                return endEvent.IsFinished;   
             }
             return true;
         }

@@ -91,6 +91,36 @@ namespace MattScripts {
                 yield return null;
             }
         }
+    
+        // This is called from outside to return the player to the specified scene
+        public IEnumerator GoToSpecificScene(int sceneIndex)
+        {
+            if(fadeOverlay == null)
+            {
+                fadeOverlay = GameObject.FindWithTag("FadeUI").GetComponent<Image>();
+            }
+
+            fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
+            yield return new WaitForSeconds(fadeTime);
+
+            // We load to the new scene
+            LoadingScreenManager.LoadScene(sceneIndex);
+        }
+    
+        // Used to transition into the app quitting
+        public IEnumerator QuitGame()
+        {
+            if(fadeOverlay == null)
+            {
+                fadeOverlay = GameObject.FindWithTag("FadeUI").GetComponent<Image>();
+            }
+
+            fadeOverlay.CrossFadeAlpha(1, fadeTime, true);
+            yield return new WaitForSeconds(fadeTime);
+
+            Debug.Log("We quit");
+            Application.Quit();
+        }
     }
 
     // This is used to make a custom editor so that this class can be more flexible in displaying information
