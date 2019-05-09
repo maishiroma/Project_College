@@ -34,6 +34,7 @@ namespace MattScripts {
             transition = gameObject.GetComponent<TransitionArea>();
 
             ChangeSelectedText(currentMenuIndex,currentMenuIndex);
+            Destroy(GameManager.Instance.PlayerReference);
         }
 
         // Checks for the player input depending on the specific states

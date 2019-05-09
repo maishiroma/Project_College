@@ -13,7 +13,6 @@ namespace MattScripts {
         [Header("Visuals")]
         public string demonName;
 
-        [Header("Stats")]
         [Range(1,9999)]
         public int phyAttackStat;
         [Range(1,9999)]

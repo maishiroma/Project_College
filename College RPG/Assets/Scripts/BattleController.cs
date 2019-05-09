@@ -5,7 +5,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 namespace MattScripts {
 
@@ -113,11 +112,8 @@ namespace MattScripts {
             {
                 for(int iteratorIndex = compareIndex + 1; iteratorIndex < listOfAllEntitiesInTurnOrder.Count; ++iteratorIndex)
                 {
-                    bool checkIfOtherIsParty = (listOfAllEntitiesInTurnOrder[compareIndex].battleData is CharacterData && listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds((CharacterData)listOfAllEntitiesInTurnOrder[compareIndex].battleData) == true);
-                    bool checkIfOtherIsEnemy = (listOfAllEntitiesInTurnOrder[compareIndex].battleData is EnemyData && listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds((EnemyData)listOfAllEntitiesInTurnOrder[compareIndex].battleData) == true);
-
                     // We check to see if we the current entity is faster than the current iterator
-                    if (checkIfOtherIsParty == true || checkIfOtherIsEnemy == true)
+                    if (listOfAllEntitiesInTurnOrder[iteratorIndex].CompareSpeeds(listOfAllEntitiesInTurnOrder[compareIndex]) == true)
                     {
                         BattleStats temp = listOfAllEntitiesInTurnOrder[iteratorIndex];
                         listOfAllEntitiesInTurnOrder[iteratorIndex] = listOfAllEntitiesInTurnOrder[compareIndex];
@@ -136,13 +132,11 @@ namespace MattScripts {
             int currLocationIndex = 0;
             for(int currIndex = 0; currIndex < playerInventory.GetPartyInvetorySize(); ++currIndex)
             {
-                GameObject partyMember = Instantiate(characterPrefab, partySpawnLocations[currLocationIndex].position, Quaternion.identity);
-                partyMember.GetComponent<BattleStats>().battleData = playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter;
-                partyMember.GetComponent<BattleStats>().InitializeHPSP(playerInventory.GetInventoryCharacterAtIndex(currIndex).CurrentHealthPoints, 
-                                                                       playerInventory.GetInventoryCharacterAtIndex(currIndex).CurrentSkillPoints, 
-                                                                       playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter.maxHealthPoints,
-                                                                       playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter.maxSkillPoints);
-                listOfAllParty.Add(partyMember.GetComponent<BattleStats>());
+                BattleStats partyMember = Instantiate(characterPrefab, partySpawnLocations[currLocationIndex].position, Quaternion.identity).GetComponent<BattleStats>();
+                partyMember.battleData = playerInventory.GetInventoryCharacterAtIndex(currIndex).SpecifiedCharacter;
+                partyMember.InitalizeEntity(playerInventory.GetInventoryCharacterAtIndex(currIndex));
+
+                listOfAllParty.Add(partyMember);
                 currLocationIndex++;
             }
         }
@@ -155,11 +149,17 @@ namespace MattScripts {
             int currSpawnIndex = 0;
             foreach(EnemyData currentData in currentBattleEvent.listOfEnemiesInFight)
             {
-                GameObject newEnemy = Instantiate(characterPrefab, enemySpawnLocations[currSpawnIndex].position, Quaternion.identity);
-                newEnemy.GetComponent<BattleStats>().battleData = currentData;
-                newEnemy.GetComponent<BattleStats>().InitializeHPSP(currentData.maxHealthPoints, currentData.maxSkillPoints);
+                BattleStats newEnemy = Instantiate(characterPrefab, enemySpawnLocations[currSpawnIndex].position, Quaternion.identity).GetComponent<BattleStats>();
+                newEnemy.battleData = currentData;
+                newEnemy.InitalizeEntity(currentData.maxHealthPoints, currentData.maxSkillPoints);
 
-                listOfAllEnemies.Add(newEnemy.GetComponent<BattleStats>());
+                // We level up the enemy in here based on their current level
+                for(int iterator = currentData.currentLevel; iterator > 0; iterator--)
+                {
+                    newEnemy.LevelUpStats();
+                }
+
+                listOfAllEnemies.Add(newEnemy);
                 currSpawnIndex++;
             }
         }
@@ -190,6 +190,59 @@ namespace MattScripts {
                 }
             }
             return 0;
+        }
+
+        // This handles EXP/Gold and level up logics after a battle has won
+        private IEnumerator PostWinActions()
+        {
+            // We first display our rewards to the player
+            battleUIController.ToggleActionBox(true, "Won " + currentBattleEvent.ExpReward + " EXP and " + currentBattleEvent.GoldReward + " Gold!");
+            yield return new WaitForSeconds(3f);
+
+            PlayerInventory currentParty = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
+            foreach(BattleStats currentPartyMember in listOfAllParty)
+            {
+                CharacterData comparedPartyMember = (CharacterData)currentPartyMember.battleData;
+                for(int currPartyIndex = 0; currPartyIndex < currentParty.GetPartyInvetorySize(); currPartyIndex++)
+                {
+                    // We check if we are looking at the same character
+                    InventoryParty currPartyMemberStats = currentParty.GetInventoryCharacterAtIndex(currPartyIndex);
+                    if(comparedPartyMember.characterName == currPartyMemberStats.SpecifiedCharacter.characterName)
+                    {
+                        // We save the HP/SP that the character has to the inventory
+                        currentPartyMember.SaveCurrentHPSP(currPartyMemberStats);
+
+                        // We also reward the entity with EXP
+                        currPartyMemberStats.CurrentEXP += currentBattleEvent.ExpReward;
+                        currPartyMemberStats.CurrentToNextLevel -= currentBattleEvent.ExpReward;
+
+                        // If we are above a threshold for EXP, we level up
+                        while(currPartyMemberStats.CurrentToNextLevel <= 0)
+                        {
+                            battleUIController.CurrentState = BattleMenuStates.LEVEL_UP;
+                            battleUIController.SavePlayerStatsToUI(currentPartyMember, currPartyMemberStats, true);
+
+                            currPartyMemberStats.CharacterLevel++;
+                            currentPartyMember.LevelUpStats();
+                            currPartyMemberStats.CurrentToNextLevel += (currPartyMemberStats.CharacterLevel * 100);
+
+                            battleUIController.SavePlayerStatsToUI(currentPartyMember, currPartyMemberStats, false);
+                            while(battleUIController.CurrentState == BattleMenuStates.LEVEL_UP)
+                            {
+                                yield return null;
+                            }
+                            yield return null;
+                        }
+                    }
+                }
+            }
+
+            // We also reward the player with gold after the fight
+            currentParty.CurrentGold += currentBattleEvent.GoldReward;
+
+            // After we finish everything, we end the event
+            currentState = BattleStates.PLAYER_WIN;
+            currentBattleEvent.EventOutcome();
         }
 
         // Returns the current character that is in the turn order
@@ -361,9 +414,8 @@ namespace MattScripts {
                     battleUIController.ToggleActionBox(true, "You won!");
                     yield return new WaitForSeconds(2f);
 
-                    currentState = BattleStates.PLAYER_WIN;
-                    currentBattleEvent.PostBattleActions(listOfAllParty);
-                    currentBattleEvent.EventOutcome();
+                    // We then reward the player with the rewards for winning
+                    StartCoroutine(PostWinActions());
                     break;
                 case -1:
                     // The enemy won, so we change to the enemy victory
@@ -380,7 +432,7 @@ namespace MattScripts {
         public IEnumerator PerformItemAction(InventoryItem currentItem, BattleStats targetedCharacter)
         {
             // Display the action box
-            battleUIController.ToggleActionBox(true, currentItem.SpecifiedItem.itemName);
+            battleUIController.ToggleActionBox(true, "Used " + currentItem.SpecifiedItem.itemName + " on " + ((CharacterData)targetedCharacter.battleData).characterName + ".");
 
             // TODO: Animation for item usage
             yield return new WaitForSeconds(1f);
@@ -389,21 +441,24 @@ namespace MattScripts {
             if(currentItem.SpecifiedItem.itemType == ItemType.HEALTH)
             {
                 targetedCharacter.CurrentHP += currentItem.SpecifiedItem.itemAmount;
-                Debug.Log("Restore " + currentItem.SpecifiedItem.itemAmount + " to HP.");
+                battleUIController.ToggleActionBox(true, "Restored " + currentItem.SpecifiedItem.itemAmount + " HP.");
             }
             else if(currentItem.SpecifiedItem.itemType == ItemType.SP)
             {
                 targetedCharacter.CurrentSP += currentItem.SpecifiedItem.itemAmount;
-                Debug.Log("Restore " + currentItem.SpecifiedItem.itemAmount + " SP.");
+                battleUIController.ToggleActionBox(true, "Restored " + currentItem.SpecifiedItem.itemAmount + " SP.");
             }
             GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>().RemoveItemFromInventory(currentItem, 1);
-            yield return null;
-
+            yield return new WaitForSeconds(1f);
             battleUIController.ToggleActionBox(false);
-            yield return null;
 
             // We then increment the turn order and change to the next turn
+            // If we are on an entity that has died, we skip their turn
             SetCurrentTurnOrder = currentTurnIndex + 1;
+            while(GetCurrentCharacterInTurnOrder().CurrentHP <= 0)
+            {
+                SetCurrentTurnOrder = currentTurnIndex + 1;
+            }
 
             // We shift the turn indicator to be on the current character
             turnIndicator.transform.position = GetCurrentCharacterInTurnOrder().gameObject.transform.position;
