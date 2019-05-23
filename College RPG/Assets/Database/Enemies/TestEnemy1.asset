@@ -13,6 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemySprite: {fileID: 0}
   enemyName: Dummy Dude
+  currentLevel: 0
   maxHealthPoints: 100
   maxSkillPoints: 100
   phyAttackStat: 10
@@ -22,6 +23,8 @@ MonoBehaviour:
   spdStat: 5
   luckStat: 3
   affinityArray: 0000000000000000000000000000000000000000000000000000000000000000
+  goldDrop: 50
+  expDrop: 40
   attackList:
   - {fileID: 11400000, guid: f0dffe808e3194c168511e344046e489, type: 2}
   - {fileID: 11400000, guid: 01f0a33523ceb4e6b8e3da583226eadf, type: 2}

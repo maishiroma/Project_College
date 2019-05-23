@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 namespace MattScripts {
 
@@ -16,6 +17,8 @@ namespace MattScripts {
         SPECIAL_TARGET,     // The user is selecting a target to do the special attack
         ITEM,               // The user is selecting an item
         ITEM_TARGET,        // The user is selecting a target to use the item on
+        LEVEL_UP,           // The user is viewing the level up screen
+        LOADING,            // The user is waiting
     }
 
     [RequireComponent(typeof(BattleController))]
@@ -40,7 +43,8 @@ namespace MattScripts {
         private GameObject descriptionBox;                              // The box that is used to show the description of the command
         private GameObject actionBox;                                   // The box that is used to highlight an attack
         private GameObject commandBox;                                  // The box that contains all of the main menu commands
-        private GameObject subCommandBox;                               // The box that contains all of the sube commands
+        private GameObject subCommandBox;                               // The box that contains all of the sub commands
+        private GameObject levelUpMenu;                                 // The box that contains the level up GUI
 
         private Transform currentMenuParent = null;                     // The current menu item that contains the list of options
 
@@ -74,6 +78,7 @@ namespace MattScripts {
             descriptionBox = battleUI.transform.GetChild(1).gameObject;
             subCommandBox = battleUI.transform.GetChild(2).gameObject;
             actionBox = battleUI.transform.GetChild(3).gameObject;
+            levelUpMenu = battleUI.transform.GetChild(4).gameObject;
             descText = descriptionBox.GetComponentInChildren<TextMeshProUGUI>();
             actionText = actionBox.GetComponentInChildren<TextMeshProUGUI>();
             currentMenuParent = commandBox.transform;
@@ -84,8 +89,20 @@ namespace MattScripts {
 		// Checks for the player input depending on the specific states
 		private void Update()
         {
+            if(currentState == BattleMenuStates.LEVEL_UP)
+            {
+                if(levelUpMenu.activeInHierarchy == false)
+                {
+                    levelUpMenu.SetActive(true);
+                }
+
+                if(Input.GetButtonDown(selectInput))
+                {
+                    currentState = BattleMenuStates.LOADING;
+                }
+            }
             // If we are NOT hidden, we enact on the rest of the pause menu logic
-            if(currentState != BattleMenuStates.INACTIVE)
+            else if(currentState != BattleMenuStates.INACTIVE && currentState != BattleMenuStates.LOADING)
             {
                 // Handles moving the player input up and down when the player is selecting an option
                 if(Input.GetAxis(scrollInput) > 0f && currentMenuIndex > 0 && CheckIfOptionIsValid(currentMenuIndex - 1))
@@ -334,9 +351,13 @@ namespace MattScripts {
         {
             for(int currPartyIndex = 0; currPartyIndex < battleController.GetPartySize(); ++currPartyIndex)
             {
-                CharacterData currCharacter = (CharacterData)battleController.GetSpecificPartyMember(currPartyIndex).battleData;
-                currentMenuParent.GetChild(currPartyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
-                currentMenuParent.GetChild(currPartyIndex).gameObject.SetActive(true);
+                // If the party member is not dead, we list them out
+                if(battleController.GetSpecificPartyMember(currPartyIndex).CurrentHP > 0)
+                {
+                    CharacterData currCharacter = (CharacterData)battleController.GetSpecificPartyMember(currPartyIndex).battleData;
+                    currentMenuParent.GetChild(currPartyIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
+                    currentMenuParent.GetChild(currPartyIndex).gameObject.SetActive(true);
+                }
             }
         }
 
@@ -441,6 +462,49 @@ namespace MattScripts {
         {
             actionBox.SetActive(isShowing);
             actionText.text = textToAdd;
+        }
+    
+        // A helper method that depending on what is passed in will determine what UI wil be updated
+        public void SavePlayerStatsToUI(BattleStats currentPartyMember, InventoryParty currentPartyMemberStats, bool isOriginal)
+        {
+            // Displays the character that is levling up
+            levelUpMenu.transform.GetChild(2).GetComponent<Image>().sprite = currentPartyMember.gameObject.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite;
+
+            // If true, we are going to modify the slider value that represnts the original player stats
+            if(isOriginal)
+            {
+                // The base player
+                levelUpMenu.transform.GetChild(4).GetChild(0).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("MaxHP");
+                levelUpMenu.transform.GetChild(4).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("MaxSP");
+                levelUpMenu.transform.GetChild(4).GetChild(2).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("BaseAttack");
+                levelUpMenu.transform.GetChild(4).GetChild(3).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("BaseDefense");
+
+                // The Demon Stats
+                levelUpMenu.transform.GetChild(5).GetChild(0).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("PhysicalAttack");
+                levelUpMenu.transform.GetChild(5).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("PhysicalDefense");
+                levelUpMenu.transform.GetChild(5).GetChild(2).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("SpecialAttack");
+                levelUpMenu.transform.GetChild(5).GetChild(3).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("SpecialDefense");
+                levelUpMenu.transform.GetChild(5).GetChild(4).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("Speed");
+                levelUpMenu.transform.GetChild(5).GetChild(5).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("Luck");
+            }
+            else
+            {
+                // The base player
+                levelUpMenu.transform.GetChild(4).GetChild(0).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("MaxHP");
+                levelUpMenu.transform.GetChild(4).GetChild(1).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("MaxSP");
+                levelUpMenu.transform.GetChild(4).GetChild(2).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("BaseAttack");
+                levelUpMenu.transform.GetChild(4).GetChild(3).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("BaseDefense");
+
+                // The Demon Stats
+                levelUpMenu.transform.GetChild(5).GetChild(0).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("PhysicalAttack");
+                levelUpMenu.transform.GetChild(5).GetChild(1).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("PhysicalDefense");
+                levelUpMenu.transform.GetChild(5).GetChild(2).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("SpecialAttack");
+                levelUpMenu.transform.GetChild(5).GetChild(3).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("SpecialDefense");
+                levelUpMenu.transform.GetChild(5).GetChild(4).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("Speed");
+                levelUpMenu.transform.GetChild(5).GetChild(5).GetChild(1).GetComponent<Slider>().value = currentPartyMember.ReturnModdedStat("Luck");
+            }
+
+            levelUpMenu.transform.GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = currentPartyMemberStats.SpecifiedCharacter.characterName + " leveled up! Now at level " + currentPartyMemberStats.CharacterLevel + "!";
         }
     }      
 }

@@ -1,6 +1,7 @@
 /*  A data file that is used to store and templete useful information
  */
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,8 @@ namespace MattScripts
         [Header("Visuals")]
         public Sprite enemySprite;
         public string enemyName;
+        [Range(1,100)]
+        public int currentLevel;
 
         [Header("Stats")]
         [Range(1,15000)]
@@ -63,8 +66,13 @@ namespace MattScripts
             AffinityValues.NORMAL
         };
 
+        [Header("Rewards")]
+        [Tooltip("All of the rewards that this enemy drops after beating it")]
+        public int goldDrop;
+        public int expDrop;
+
         [Header("External References")]
         [Tooltip("All of the attacks the enemy can have.")]
         public List<AttackData> attackList = new List<AttackData>();
-    }   
+	}   
 }

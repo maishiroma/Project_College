@@ -18,6 +18,8 @@ namespace MattScripts {
 
         // Private Variables
         private int origSceneIndex;                         // A reference to the original scene that the player was originally in
+        private int goldReward;                 
+        private int expReward;
 
         private Vector3 origCameraLocation;                 // Hard references to the player camera and values that the camera was before the battle
         private Quaternion origCameraRotation;
@@ -28,7 +30,28 @@ namespace MattScripts {
         private float origCameraMinZ;
         private float origCameraMaxZ;
 
-        // When this event is activated, we start up the battle.
+        public int GoldReward {
+            get { return goldReward; }
+        }
+
+        public int ExpReward {
+            get { return expReward; }
+        }
+
+        // Sets up the private variables
+		private void Start()
+		{
+            origSceneIndex = 0;
+
+            // Calculates how much EXP and gold this fight gives
+            foreach(EnemyData currEnemy in listOfEnemiesInFight)
+            {
+                expReward += currEnemy.expDrop;
+                goldReward += currEnemy.goldDrop;
+            }
+		}
+
+		// When this event is activated, we start up the battle.
 		private void OnEnable()
 		{
             if(hasActivated == false)
@@ -76,30 +99,9 @@ namespace MattScripts {
                 }
                 else if(controller.CurrentState == BattleStates.PLAYER_WIN)
                 {
-                    // TODO: We first reward the player with their rewards as well as mark this event being completed permenatly.
-
+                    // We mark this event being completed permenatly.
                     // And then warp them back using the saved coords and deactivate this event.
                     StartCoroutine(gameObject.GetComponent<TransitionArea>().GoToSpecificScene(origSceneIndex));
-                }
-            }
-        }
-    
-        // Saves the new information to the player's party and rewards them exp and gold
-        public void PostBattleActions(List<BattleStats> currentPlayerPartyInBattle)
-        {
-            PlayerInventory currentParty = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
-
-            foreach(BattleStats currentPartyMember in currentPlayerPartyInBattle)
-            {
-                CharacterData comparedPartyMember = (CharacterData)currentPartyMember.battleData;
-                for(int currPartyIndex = 0; currPartyIndex < currentParty.GetPartyInvetorySize(); currPartyIndex++)
-                {
-                    // We check if we are looking at the same character
-                    if(comparedPartyMember.characterName == currentParty.GetInventoryCharacterAtIndex(currPartyIndex).SpecifiedCharacter.characterName)
-                    {
-                        // We save the HP/SP that the character has to the inventory
-                        currentPartyMember.SaveCurrentHPSP(currentParty.GetInventoryCharacterAtIndex(currPartyIndex));
-                    }
                 }
             }
         }

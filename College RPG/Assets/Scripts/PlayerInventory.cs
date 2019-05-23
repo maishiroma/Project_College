@@ -77,6 +77,23 @@ namespace MattScripts {
         private int characterLevel = 1;             // All of these values are used in leveling up and maintaining a copy of the original data
         private int currentHealthPoints = 0;
         private int currentSkillPoints = 0;
+        private int currentEXP = 0;
+        private int toNextLevel = 100;
+
+        /*  This Dictionary will have the following keys:
+         *  HP
+         *  SP
+         *  BaseAttack (character data only)
+         *  BaseDefense (character data only)
+         *  PhysicalAttack
+         *  PhysicalDefense
+         *  SpecialAttack
+         *  SpecialDefense
+         *  Speed
+         *  Luck
+         */
+        private Dictionary<string, int> modifierValuesForStats;       // This data structure holds all of the value increments for each of the stats an entiry has
+        private string[] keyArray;                                    // An array of all of the keys that are available to be used
 
         public CharacterData SpecifiedCharacter {
             get {return specifiedCharacter;}
@@ -128,12 +145,95 @@ namespace MattScripts {
             }
         }
 
+        public int CurrentEXP {
+            get { return currentEXP; }
+            set {
+                if(value > 0)
+                {
+                    currentEXP = value;
+                }
+            }
+        }
+
+        public int CurrentToNextLevel {
+            get { return toNextLevel; }
+            set {
+                toNextLevel = value;
+            }
+        }
+
+        public Dictionary<string, int> GetModifierValuesForStats {
+            get { return modifierValuesForStats; }
+        }
+
+        // Initializes the party member
         public InventoryParty(CharacterData newCharacter)
         {
             this.specifiedCharacter = newCharacter;
-
             this.currentHealthPoints = newCharacter.maxHealthPoints;
             this.currentSkillPoints = newCharacter.maxSkillPoints;
+            modifierValuesForStats = new Dictionary<string, int>();
+
+            modifierValuesForStats.Add("MaxHP",0);
+            modifierValuesForStats.Add("MaxSP", 0);
+            modifierValuesForStats.Add("BaseAttack",0);
+            modifierValuesForStats.Add("BaseDefense",0);
+            modifierValuesForStats.Add("PhysicalAttack",0);
+            modifierValuesForStats.Add("PhysicalDefense",0);
+            modifierValuesForStats.Add("SpecialAttack",0);
+            modifierValuesForStats.Add("SpecialDefense",0);
+            modifierValuesForStats.Add("Speed",0);
+            modifierValuesForStats.Add("Luck",0);
+
+            keyArray = new string[modifierValuesForStats.Keys.Count];
+            modifierValuesForStats.Keys.CopyTo(keyArray, 0);
+        }
+    
+        // Method that increments up the values of an entity randomly
+        public void LevelUpStats()
+        {
+            int numbStatsLeveledUp = Random.Range(2,modifierValuesForStats.Count);
+            while(numbStatsLeveledUp > 0)
+            {
+                string randomStat = keyArray[Random.Range(0, keyArray.Length)];
+                int randomIncrement = Random.Range(1,4);
+
+                modifierValuesForStats[randomStat] += randomIncrement;
+                numbStatsLeveledUp--;
+                Debug.Log(randomStat + " went up by " + randomIncrement);
+            }
+        }
+    
+        // Helper method that returns a stat that is passed by Key to return the stat that incorperates the modifier
+        // If the stat does not exist, returns -1
+        public int ReturnModdedStat(string statName)
+        {
+            switch(statName)
+            {
+                case "MaxHP":
+                    return specifiedCharacter.maxHealthPoints + modifierValuesForStats[statName];
+                case "MaxSP":
+                    return specifiedCharacter.maxSkillPoints + modifierValuesForStats[statName];
+                case "BaseAttack":
+                    return specifiedCharacter.baseAttack + modifierValuesForStats[statName];
+                case "BaseDefense":
+                    return specifiedCharacter.baseDefense + modifierValuesForStats[statName];
+                case "PhysicalAttack":
+                    return specifiedCharacter.demonData.phyAttackStat + modifierValuesForStats[statName];
+                case "PhysicalDefense":
+                    return specifiedCharacter.demonData.phyDefenseStat + modifierValuesForStats[statName];
+                case "SpecialAttack":
+                    return specifiedCharacter.demonData.spAttackStat + modifierValuesForStats[statName];
+                case "SpecialDefense":
+                    return specifiedCharacter.demonData.spDefenseStat + modifierValuesForStats[statName];;
+                case "Speed":
+                    return specifiedCharacter.demonData.spdStat + modifierValuesForStats[statName];;
+                case "Luck":
+                    return specifiedCharacter.demonData.luckStat + modifierValuesForStats[statName];;
+                default:
+                    Debug.LogError(statName + " does not exist!");
+                    return -1;
+            }
         }
     }
 
@@ -168,10 +268,21 @@ namespace MattScripts {
     public class PlayerInventory : MonoBehaviour {
 
         // Private Variables
+        private int currentGold;
         private List<InventoryItem> listOfItems;
         private List<InventoryGear> listOfGear;
         private List<InventoryParty> listOfPartyMembers;
         private List<InventoryLink> listOfLinks;
+
+        public int CurrentGold {
+            get { return currentGold; }
+            set {
+                if(value > 0)
+                {
+                    currentGold = value;
+                }
+            }
+        }
 
         // Initialzes all of the private variables
 		private void Start()

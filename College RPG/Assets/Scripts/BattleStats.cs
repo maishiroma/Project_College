@@ -1,7 +1,8 @@
 ﻿/*  Encapsulates important data into this class that is used in battles.
  *  Every character in a battle will have this script in order to have an easier way of organizing all of the entities
  */
-
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MattScripts {
@@ -15,6 +16,21 @@ namespace MattScripts {
 
         private int currentSP;
         private int maxSP;
+
+        /*  This Dictionary will have the following keys:
+         *  MaxHP
+         *  MaxSP
+         *  BaseAttack (character data only)
+         *  BaseDefense (character data only)
+         *  PhysicalAttack
+         *  PhysicalDefense
+         *  SpecialAttack
+         *  SpecialDefense
+         *  Speed
+         *  Luck
+         */
+        private Dictionary<string, int> modifierValuesForStats;       // This data structure holds all of the value increments for each of the stats an entiry has
+        private string[] keyArray;                                    // An array of all of the keys that are available to be used
 
         // Getter/Setter for HP. Makes sure HP does not go below 0 or over the max amount
         public int CurrentHP {
@@ -54,21 +70,40 @@ namespace MattScripts {
             }
         }
 
-        // We initialize both HP/SP to what is passed
-        // This is an overloaded method
-        public void InitializeHPSP(int newHP, int newSP)
+        // We initialize the entity here
+        // This is overloaded
+        // This definition is used for enemies
+        public void InitalizeEntity(int newHP, int newSP)
         {
+            modifierValuesForStats = new Dictionary<string, int>();
+
+            modifierValuesForStats.Add("MaxHP",0);
+            modifierValuesForStats.Add("MaxSP", 0);
+            modifierValuesForStats.Add("PhysicalAttack",0);
+            modifierValuesForStats.Add("PhysicalDefense",0);
+            modifierValuesForStats.Add("SpecialAttack",0);
+            modifierValuesForStats.Add("SpecialDefense",0);
+            modifierValuesForStats.Add("Speed",0);
+            modifierValuesForStats.Add("Luck",0);
+            keyArray = new string[modifierValuesForStats.Keys.Count];
+            modifierValuesForStats.Keys.CopyTo(keyArray, 0);
+
             currentHP = newHP;
             currentSP = newSP;
-            maxHP = newHP;
-            maxSP = newHP;
+            maxHP = currentHP;
+            maxSP = currentSP;
         }
-        public void InitializeHPSP(int newHP, int newSP, int newMaxHP, int newMaxSP)
+        // This definition is used for players
+        public void InitalizeEntity(InventoryParty partyMember)
         {
-            currentHP = newHP;
-            currentSP = newSP;
-            maxHP = newMaxHP;
-            maxSP = newMaxSP;
+            modifierValuesForStats = partyMember.GetModifierValuesForStats;
+            keyArray = new string[modifierValuesForStats.Keys.Count];
+            modifierValuesForStats.Keys.CopyTo(keyArray, 0);
+
+            currentHP = partyMember.CurrentHealthPoints;
+            currentSP = partyMember.CurrentSkillPoints;
+            maxHP = ReturnModdedStat("MaxHP");
+            maxSP = ReturnModdedStat("MaxSP");
         }
 
         // Using the passed in party member, we save the current HP/SP to the party member
@@ -79,94 +114,22 @@ namespace MattScripts {
         }
 
         // We compare the speeds of the called object and the other data that was passed in
-        // This is an overloaded method
-        public bool CompareSpeeds(CharacterData other)
+        public bool CompareSpeeds(BattleStats other)
         {
-            if(battleData is CharacterData)
+            if(ReturnModdedStat("Speed") > other.ReturnModdedStat("Speed"))
             {
-                CharacterData caller = (CharacterData)battleData;
-
-                if(caller.demonData.spdStat > other.demonData.spdStat)
-                {
-                    return true;
-                }
-                else if(caller.demonData.spdStat < other.demonData.spdStat)
-                {
-                    return false;
-                }
-                else
-                {
-                    // If we have a tie in speed, we will randomly decide which one will be faster
-                    return (Random.Range(0,2) == 1);
-                }
+                return true;
             }
-            else if(battleData is EnemyData)
+            else if(ReturnModdedStat("Speed") < other.ReturnModdedStat("Speed"))
             {
-                EnemyData caller = (EnemyData)battleData;
-
-                if(caller.spdStat > other.demonData.spdStat)
-                {
-                    return true;
-                }
-                else if(caller.spdStat < other.demonData.spdStat)
-                {
-                    return false;
-                }
-                else
-                {
-                    return (Random.Range(0,2) == 1);
-                }
+                return false;
             }
             else
             {
-                Debug.LogError("You did not pass a valid object in battle data!");
-                return false;
+                // If we have a tie in speed, we will randomly decide which one will be faster
+                return (Random.Range(0,2) == 1);
             }
         }    
-        public bool CompareSpeeds(EnemyData other)
-        {
-            if(battleData is CharacterData)
-            {
-                CharacterData caller = (CharacterData)battleData;
-
-                if(caller.demonData.spdStat > other.spdStat)
-                {
-                    return true;
-                }
-                else if(caller.demonData.spdStat < other.spdStat)
-                {
-                    return false;
-                }
-                else
-                {
-                    // If we have a tie in speed, we will randomly decide which one will be faster
-                    return (Random.Range(0,2) == 1);
-                }
-            }
-            else if(battleData is EnemyData)
-            {
-                EnemyData caller = (EnemyData)battleData;
-
-                if(caller.spdStat > other.spdStat)
-                {
-                    return true;
-                }
-                else if(caller.spdStat < other.spdStat)
-                {
-                    return false;
-                }
-                else
-                {
-                    // If we have a tie in speed, we will randomly decide which one will be faster
-                    return (Random.Range(0,2) == 1);
-                }
-            }
-            else
-            {
-                Debug.LogError("You did not pass a valid object in battle data!");
-                return false;
-            }
-         }
 
         // Calculates how damage will be dealt to this entity
         // Returns the amount of damage done
@@ -175,51 +138,43 @@ namespace MattScripts {
             int attackPower = 0;
             int defensePower = 0;
 
+            // If the attacker is the player, we are attacking an enemy
             if(attacker.battleData is CharacterData)
             {
-                // If the attacker is a party member, we are attacking an enemy
-                CharacterData attacker_casted = (CharacterData)attacker.battleData;
-                EnemyData target = (EnemyData)battleData;
-
                 if(currentAttack.attackType == AttackType.PHYSICAL)
                 {
                     // Because the attack is physical, we calculate the math based on physical power
-                    attackPower = attacker_casted.baseAttack + currentAttack.attackPower + attacker_casted.demonData.phyAttackStat;
-                    defensePower = target.phyDefenseStat;
+                    attackPower = attacker.ReturnModdedStat("BaseAttack") + currentAttack.attackPower + attacker.ReturnModdedStat("PhysicalAttack");
+                    defensePower = ReturnModdedStat("PhysicalDefense");
                 }
                 else if(currentAttack.attackType == AttackType.SPECIAL)
                 {
                     // Because the attack is special, we calculate the math based on special power
-                    attackPower = attacker_casted.baseAttack + currentAttack.attackPower + attacker_casted.demonData.spAttackStat;
-                    defensePower = target.spDefenseStat;
+                    attackPower = attacker.ReturnModdedStat("BaseAttack") + currentAttack.attackPower + attacker.ReturnModdedStat("SpecialAttack");
+                    defensePower = ReturnModdedStat("SpecialDefense");
 
                     // We also deduct SP from the user as well
                     attacker.CurrentSP -= currentAttack.attackCost;
                 }
-                Debug.Log(attacker_casted.characterName + " attacked " + target.enemyName);
             }
+            // If the attacker is an enemy, we are attacking a party member
             else if(attacker.battleData is EnemyData)
             {
-                // If the attacker is an enemy, we are attacking a party member
-                EnemyData attacker_casted = (EnemyData)attacker.battleData;
-                CharacterData target = (CharacterData)battleData;
-
                 if(currentAttack.attackType == AttackType.PHYSICAL)
                 {
                     // Because the attack is physical, we calculate the math based on physical power
-                    attackPower = currentAttack.attackPower + attacker_casted.phyAttackStat;
-                    defensePower = target.baseDefense + target.demonData.phyDefenseStat;
+                    attackPower = currentAttack.attackPower + attacker.ReturnModdedStat("PhysicalAttack");
+                    defensePower = ReturnModdedStat("BaseDefense") + ReturnModdedStat("PhysicalDefense");
                 }
                 else if(currentAttack.attackType == AttackType.SPECIAL)
                 {
                     // Because the attack is special, we calculate the math based on special power
-                    attackPower = currentAttack.attackPower + attacker_casted.spAttackStat;
-                    defensePower = target.baseDefense + target.demonData.phyDefenseStat;
+                    attackPower = currentAttack.attackPower + attacker.ReturnModdedStat("SpecialAttack");
+                    defensePower = ReturnModdedStat("BaseDefense") + ReturnModdedStat("SpecialDefense");
 
                     // We also deduct SP from the user as well
                     attacker.CurrentSP -= currentAttack.attackCost;
                 }
-                Debug.Log(attacker_casted.enemyName + " attacked " + target.characterName);
             }
 
             // Modifies the total attack power depending on the affinity of the attack
@@ -239,7 +194,6 @@ namespace MattScripts {
             // We then calculate the final damage, clamping the damage to 0 and infinity (cannot be negative)
             int finalDamage = (int)Mathf.Clamp(attackPower - defensePower, 0, Mathf.Infinity);
             currentHP -= finalDamage;
-            Debug.Log("The attack did " + finalDamage + " damage.");
 
             // We then return the total damage output
             return finalDamage;
@@ -281,6 +235,83 @@ namespace MattScripts {
 
             // By default, we will return normal effectiveness
             return AffinityValues.NORMAL;
+        }
+
+        // Method that increments up the values of an entity randomly
+        public void LevelUpStats()
+        {
+            int numbStatsLeveledUp = Random.Range(2,modifierValuesForStats.Count);
+            while(numbStatsLeveledUp > 0)
+            {
+                string randomStat = keyArray[Random.Range(0, keyArray.Length)];
+                int randomIncrement = Random.Range(1,4);
+
+                modifierValuesForStats[randomStat] += randomIncrement;
+                numbStatsLeveledUp--;
+            }
+        }
+
+        // Returns the value of a stat after it has been modded by the modifiers
+        public int ReturnModdedStat(string statName)
+        {
+            if(battleData is CharacterData)
+            {
+                CharacterData moddedData = (CharacterData)battleData;
+                switch(statName)
+                {
+                    case "MaxHP":
+                        return moddedData.maxHealthPoints + modifierValuesForStats[statName];
+                    case "MaxSP":
+                        return moddedData.maxSkillPoints + modifierValuesForStats[statName];
+                    case "BaseAttack":
+                        return moddedData.baseAttack + modifierValuesForStats[statName];
+                    case "BaseDefense":
+                        return moddedData.baseDefense + modifierValuesForStats[statName];
+                    case "PhysicalAttack":
+                        return moddedData.demonData.phyAttackStat + modifierValuesForStats[statName];
+                    case "PhysicalDefense":
+                        return moddedData.demonData.phyDefenseStat + modifierValuesForStats[statName];
+                    case "SpecialAttack":
+                        return moddedData.demonData.spAttackStat + modifierValuesForStats[statName];
+                    case "SpecialDefense":
+                        return moddedData.demonData.spDefenseStat + modifierValuesForStats[statName];
+                    case "Speed":
+                        return moddedData.demonData.spdStat + modifierValuesForStats[statName];
+                    case "Luck":
+                        return moddedData.demonData.luckStat + modifierValuesForStats[statName];
+                    default:
+                        Debug.LogError(statName + " does not exist!");
+                        return -1;
+                }
+            }
+            else if(battleData is EnemyData)
+            {
+                EnemyData moddedData = (EnemyData)battleData;
+                switch(statName)
+                {
+                    case "MaxHP":
+                        return moddedData.maxHealthPoints + modifierValuesForStats[statName];
+                    case "MaxSP":
+                        return moddedData.maxSkillPoints + modifierValuesForStats[statName];
+                    case "PhysicalAttack":
+                        return moddedData.phyAttackStat + modifierValuesForStats[statName];
+                    case "PhysicalDefense":
+                        return moddedData.phyDefenseStat + modifierValuesForStats[statName];
+                    case "SpecialAttack":
+                        return moddedData.spAttackStat + modifierValuesForStats[statName];
+                    case "SpecialDefense":
+                        return moddedData.spDefenseStat + modifierValuesForStats[statName];
+                    case "Speed":
+                        return moddedData.spdStat + modifierValuesForStats[statName];
+                    case "Luck":
+                        return moddedData.luckStat + modifierValuesForStats[statName];
+                    default:
+                        Debug.LogError(statName + " does not exist!");
+                        return -1;
+                }
+            }
+            Debug.LogError("The data type does not exist!");
+            return -1;
         }
 
         // Helper method that translates an attack's affinity to an index number
