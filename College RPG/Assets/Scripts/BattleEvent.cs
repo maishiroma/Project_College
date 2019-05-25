@@ -54,7 +54,8 @@ namespace MattScripts {
 		// When this event is activated, we start up the battle.
 		private void OnEnable()
 		{
-            if(hasActivated == false)
+            // NOTE! If we want to have the behavior of having the battle triggered by a trigger box, we just need to make sure Activate Area and object to interact is NULL
+            if(hasActivated == false && activateArea == null && objectToInteract == null)
             {
                 EventSetup();
                 hasActivated = true;
