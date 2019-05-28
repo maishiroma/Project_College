@@ -20,6 +20,12 @@ namespace MattScripts {
         LOADING // The transition state used to prevent any player input
     }
 
+    // These are all of the states that occur when the player is within a sub menu
+    public enum SubMenuStates {
+        HIDDEN,
+        SUB1,
+    }
+
     public class PauseMenuController : MonoBehaviour {
 
         [Header("General Variables")]
@@ -36,6 +42,7 @@ namespace MattScripts {
 
         // Private Variables
         private MenuStates currentState = MenuStates.HIDDEN;
+        private SubMenuStates currentSubMenuState = SubMenuStates.HIDDEN;
         private Stack<int> prevIndexMenus;                              // Used to save the previous index spaces when navigating menus
         private int currentMenuIndex = 0;                               // The current menu index that we are selecting
         private bool hasScrolled = false;
@@ -119,8 +126,7 @@ namespace MattScripts {
 
                 // Logic for selecting a field
                 // Depending on what state we are in, we do various activities
-                // TODO: Need to implement the activity withing each field.
-                if(Input.GetButtonDown(selectInput))
+                if(Input.GetButtonDown(selectInput) && CheckIfOptionIsValid(currentMenuIndex) == true)
                 {
                     Debug.Log("We selected " + currentMenuParent.GetChild(currentMenuIndex).GetComponent<TextMeshProUGUI>().text);
                     switch(currentState)
@@ -129,6 +135,8 @@ namespace MattScripts {
                             MainMenuActions();
                             break;
                         case MenuStates.ITEM:
+                            ItemMenuActions();
+                            break;
                         case MenuStates.PARTY:
                         case MenuStates.GEAR:
                         case MenuStates.LINK:
@@ -139,6 +147,7 @@ namespace MattScripts {
                 {
                     // We return to the last selected itm
                     ReturnToPreviousOption();
+                    UpdateMenuContext();
                 }
             }
 		}
@@ -150,9 +159,19 @@ namespace MattScripts {
             {
                 case MenuStates.ITEM:
                     // We update the item description
-                    if(currentMenuIndex < playerInventory.GetItemInventorySize())
+                    if(currentSubMenuState == SubMenuStates.HIDDEN)
                     {
-                        itemMenuObject.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemAtIndex(currentMenuIndex).SpecifiedItem.itemDescription;
+                        if(currentMenuIndex < playerInventory.GetItemInventorySize())
+                        {
+                            itemMenuObject.transform.GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = playerInventory.GetItemAtIndex(currentMenuIndex).SpecifiedItem.itemDescription;
+                        }
+                    }
+                    else if(currentSubMenuState == SubMenuStates.SUB1)
+                    {
+                        InventoryParty currParty = playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex);
+                        itemMenuObject.transform.GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = "Select a target to use this on.";
+                        itemMenuObject.transform.GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = "HP: " + currParty.CurrentHealthPoints + "/" + currParty.ReturnModdedStat("MaxHP") + 
+                            "\nSP: " + currParty.CurrentSkillPoints + "/" + currParty.ReturnModdedStat("MaxSP");
                     }
                     break;
                 case MenuStates.PARTY:
@@ -222,33 +241,134 @@ namespace MattScripts {
             }
         }
 
+        // The actions that are taken when we are in the item context
+        private void ItemMenuActions()
+        {
+            if(currentState == MenuStates.ITEM)
+            {
+                // We selected an item
+                if(currentSubMenuState == SubMenuStates.HIDDEN)
+                {
+                    // We first activate our menus, setting them to how they should look
+                    itemMenuObject.transform.GetChild(1).gameObject.SetActive(true);
+                    itemMenuObject.transform.GetChild(3).gameObject.SetActive(true);
+                    ChangeSelectedText(currentMenuIndex, -1);
+                    prevIndexMenus.Push(currentMenuIndex);
+
+                    // We then set up the logic for the sub menu that follows
+                    currentSubMenuState = SubMenuStates.SUB1;
+                    currentMenuIndex = 0;
+                    currentMenuParent = itemMenuObject.transform.GetChild(1).GetChild(0).GetChild(0);
+                    InitializeSubPartyMenu();
+                    UpdateMenuContext();
+                    ChangeSelectedText(currentMenuIndex, 0);
+                }
+                // We selected our target to use the item on
+                else if(currentSubMenuState == SubMenuStates.SUB1)
+                {
+                    // We peek into our stack to get the item we selected
+                    InventoryItem currItem = playerInventory.GetItemAtIndex(prevIndexMenus.Peek());
+                    if(currItem.SpecifiedItem.itemType == ItemType.HEALTH)
+                    {
+                        if(playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).CurrentHealthPoints < playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).ReturnModdedStat("MaxHP"))
+                        {
+                            // We healed the player by the item amount
+                            playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).CurrentHealthPoints += currItem.SpecifiedItem.itemAmount;
+                            playerInventory.RemoveItemFromInventory(currItem, 1);
+                            UpdateMenuContext();
+                            Debug.Log("Used " + currItem.SpecifiedItem.itemName);
+                        }
+                        else
+                        {
+                            itemMenuObject.transform.GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = "This character's HP is already full!";
+                        }
+                    }
+                    else if(currItem.SpecifiedItem.itemType == ItemType.SP)
+                    {
+                        if(playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).CurrentHealthPoints < playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).ReturnModdedStat("MaxSP"))
+                        {
+                            // We healthed the player by the item amount
+                            playerInventory.GetInventoryCharacterAtIndex(currentMenuIndex).CurrentSkillPoints += currItem.SpecifiedItem.itemAmount;
+                            playerInventory.RemoveItemFromInventory(currItem, 1);
+                            UpdateMenuContext();
+                            Debug.Log("Used " + currItem.SpecifiedItem.itemName);
+                        }
+                        else
+                        {
+                            itemMenuObject.transform.GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = "This character's SP is already full!";
+                        }
+                    }
+
+                    // If we run out of this current item, we automatically return to the initial menu of selectng an item
+                    if(currItem.Quantity <= 0)
+                    {
+                        ReturnToPreviousOption();
+                        UpdateMenuContext();
+                    }
+                }
+            }
+        }
+
         // Depending on where we are, we hop back to the previous option
         private void ReturnToPreviousOption()
         {
             if(prevIndexMenus.Count > 0)
             {
-                switch(currentState)
+                ChangeSelectedText(currentMenuIndex, -1);
+
+                if(currentSubMenuState == SubMenuStates.HIDDEN)
                 {
-                    case MenuStates.ITEM:
-                        itemMenuObject.SetActive(false);
-                        break;
-                    case MenuStates.PARTY:
-                        partyMenuObject.SetActive(false);
-                        break;
-                    case MenuStates.GEAR:
-                        gearMenuObject.SetActive(false);
-                        break;
-                    case MenuStates.LINK:
-                        linkMenuObject.SetActive(false);
-                        break;
+                    // If we are at the root of a menu, we return to the main menu
+                    switch(currentState)
+                    {
+                        case MenuStates.ITEM:
+                            itemMenuObject.SetActive(false);
+                            break;
+                        case MenuStates.PARTY:
+                            partyMenuObject.SetActive(false);
+                            break;
+                        case MenuStates.GEAR:
+                            gearMenuObject.SetActive(false);
+                            break;
+                        case MenuStates.LINK:
+                            linkMenuObject.SetActive(false);
+                            break;
+                    }
+
+                    currentMenuParent = pauseMenuObject.transform.GetChild(0);
+                    currentMenuParent.gameObject.SetActive(true);
+                    currentState = MenuStates.MAIN;
+                }
+                else
+                {
+                    // If we are in a root of a menu, depending on our sub state, we act accordingly
+                    // In this case, we are presuming that when we are in a substate, we exit back to the hidden sub menu state
+                    switch(currentState)
+                    {
+                        case MenuStates.ITEM:
+                            itemMenuObject.transform.GetChild(1).gameObject.SetActive(false);
+                            itemMenuObject.transform.GetChild(3).gameObject.SetActive(false);
+                            currentMenuParent = itemMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
+                            UpdateItemMenu();
+                            break;
+                        case MenuStates.PARTY:
+                            break;
+                        case MenuStates.GEAR:
+                            break;
+                        case MenuStates.LINK:
+                            break;
+                    }
+                    currentSubMenuState = SubMenuStates.HIDDEN;
                 }
 
-                ChangeSelectedText(currentMenuIndex, -1);
-                currentMenuParent = pauseMenuObject.transform.GetChild(0);
-                currentMenuParent.gameObject.SetActive(true);
-                currentState = MenuStates.MAIN;
-
+                // We check to see if the new option is a valid point.
                 int newIndex = prevIndexMenus.Pop();
+                while(CheckIfOptionIsValid(newIndex) == false && newIndex > 0)
+                {
+                    // If we ran into an invalid point, we subtract from the index until we hit one
+                    // OR if newIndex reaches 0, we automatically exit the loop and use that value
+                    newIndex--;
+                }
                 ChangeSelectedText(currentMenuIndex, newIndex);
                 currentMenuIndex = newIndex;
             }
@@ -264,23 +384,8 @@ namespace MattScripts {
         {
             itemMenuObject.SetActive(true);
             currentMenuParent = itemMenuObject.transform.GetChild(0).GetChild(0).GetChild(0);
-
-            // We update all of the items in the menu to reflect the inventory
-            int currItemIndex = 0;
-            while(currItemIndex < playerInventory.GetItemInventorySize())
-            {
-                ItemData currItem = playerInventory.GetItemAtIndex(currItemIndex).SpecifiedItem;
-                currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = currItem.itemName;
-                ++currItemIndex;
-            }
-            // For the rest of the items in the list, we clear them from the screen
-            while(currItemIndex < currentMenuParent.childCount)
-            {
-                currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = "";
-                ++currItemIndex;
-            }
-
             currentState = MenuStates.ITEM;
+            UpdateItemMenu();
         }
 
         // We set up all of the variables needed for the party menu
@@ -350,6 +455,46 @@ namespace MattScripts {
             }
 
             currentState = MenuStates.LINK;
+        }
+
+        // Sets up all of the values for the party sub menu
+        private void InitializeSubPartyMenu()
+        {
+            int currCharacterIndex = 0;
+            while(currCharacterIndex < playerInventory.GetPartyInvetorySize())
+            {
+                CharacterData currCharacter = playerInventory.GetInventoryCharacterAtIndex(currCharacterIndex).SpecifiedCharacter;
+                currentMenuParent.GetChild(currCharacterIndex).GetComponent<TextMeshProUGUI>().text = currCharacter.characterName;
+                ++currCharacterIndex;
+            }
+            // For the rest of the items in the list, we clear them from the screen
+            while(currCharacterIndex < currentMenuParent.childCount)
+            {
+                currentMenuParent.GetChild(currCharacterIndex).GetComponent<TextMeshProUGUI>().text = "";
+                ++currCharacterIndex;
+            }
+        }
+
+        // Updates the contents of the item menu when called.
+        private void UpdateItemMenu()
+        {
+            if(currentState == MenuStates.ITEM)
+            {
+                // We update all of the items in the menu to reflect the inventory
+                int currItemIndex = 0;
+                while(currItemIndex < playerInventory.GetItemInventorySize())
+                {
+                    ItemData currItem = playerInventory.GetItemAtIndex(currItemIndex).SpecifiedItem;
+                    currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = currItem.itemName;
+                    ++currItemIndex;
+                }
+                // For the rest of the items in the list, we clear them from the screen
+                while(currItemIndex < currentMenuParent.childCount)
+                {
+                    currentMenuParent.GetChild(currItemIndex).GetComponent<TextMeshProUGUI>().text = "";
+                    ++currItemIndex;
+                }
+            }
         }
 
         // Helper method that changes the two texts in the currentMenuParent at the specified indexes to change gradiants
