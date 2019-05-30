@@ -30,15 +30,25 @@ This is what first shows when the player opens the Pause Menu. Here, the player 
 ![Main Menu Hierarcy](images/MeinMenu_Hierarchy.png)
 
 ### Item Menu
-__SCREENSHOTS AND GIF TO BE ADDED LATER__
+![Item Menu](images/ItemMenu_Main.png)
 
-This is where the player can examine and use an item that is in their inventory.
+This is where the player can examine and use an item that is in their inventory. When the player has items in their inventory, they are able to freely select any of them in this menu. Once they select an item, they are treated to this view:
+
+![Item Menu Target](images/ItemMenu_Sub.png)
+Here, the player can not only see who is currently in their party, but also shows that character's individual stats. Upon selecting the character the following happens:
+1. The item is used
+2. The selected character's HP or SP is restored
+3. If there is more of said item, the player is free to use another one of the same item. If not, they are moved back to the item selection menu.
 
 ![Item Menu Hierarchy](images/ItemMenu_Hierarchy.png)
 
 As shown here, all of the items will be displayed in the `Context` GameObject that is in the `SelectionView` GameObject. Later down the line, this will be dynamically updated to list out more than the number of items that are currently in there.
 
 The `DescriptionBox` GameObject will display useful information to the player given the context of what the player is currently doing in that menu.
+
+The `PartyView` holds all of the information of the current player party.
+
+The `PartyMemberStats` displays the highlighted party member's HP and SP. This will be updated automatically when an item is used on a party member.
 
 ### Party Menu
 __SCREENSHOTS AND GIF TO BE ADDED LATER__
