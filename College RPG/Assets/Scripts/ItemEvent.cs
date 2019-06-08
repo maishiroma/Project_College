@@ -11,6 +11,7 @@ namespace MattScripts {
         public ScriptableObject itemToGive; // The object that this event will grant to the player
         [Range(-99,99)]
         public int quantity = 1;        // How much is granted/taken from the player?
+        public bool canResetItself;
 
 		// Private variables
 		private PlayerInventory playerInventory;
@@ -84,6 +85,11 @@ namespace MattScripts {
                 playerInventory.AddToInventory(newLink);
                 isFinished = true;
             }
+
+            if(canResetItself == true)
+            {
+                Invoke("ResetEvent", 0.5f);
+            }
         }
 
         // Upon activation, we play out this event
@@ -96,6 +102,14 @@ namespace MattScripts {
                 EventOutcome();
                 hasActivated = true;
             }
+		}
+
+        // Resets this event to be activated again
+		public override void ResetEvent()
+		{
+            hasActivated = false;
+            isFinished = false;
+            gameObject.SetActive(false);
 		}
 	}   
 }
