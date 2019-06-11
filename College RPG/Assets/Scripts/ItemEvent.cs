@@ -30,6 +30,7 @@ namespace MattScripts {
 		public override void EventSetup()
 		{
             playerInventory = GameManager.Instance.PlayerReference.GetComponent<PlayerInventory>();
+            EventOutcome();
 		}
 
 		// Upon being enabled, this event will grant the player the specific object
@@ -94,9 +95,10 @@ namespace MattScripts {
 
         // Upon activation, we play out this event
         // Once activated, this event will not be able to be replayed
+        // And this will only activate if there is no activation area
 		private void OnEnable()
 		{
-            if(hasActivated == false)
+            if(hasActivated == false && activateArea == null)
             {
                 EventSetup();
                 EventOutcome();
