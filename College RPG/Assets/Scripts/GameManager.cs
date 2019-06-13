@@ -137,7 +137,7 @@ namespace MattScripts {
 
             // We check to see what scene we are in. If we are in a cutscene, we do an additional step with the player
             // All cutscenes will be in a build index < 3 (for now)
-            if(sceneIndex < 3)
+            if(sceneIndex < 1)
             {
                 mainCamera.objectToFollow = player.transform;
 

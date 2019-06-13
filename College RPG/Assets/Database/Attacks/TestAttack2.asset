@@ -17,4 +17,4 @@ MonoBehaviour:
   attackType: 1
   attackAffinity: 1
   attackCost: 10
-  attackPower: 20
+  attackPower: 100
