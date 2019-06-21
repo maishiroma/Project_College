@@ -11,9 +11,10 @@ namespace MattScripts {
     [RequireComponent(typeof(TransitionArea))]
     public class BattleEvent : BaseEvent
     {
+        public static BaseEvent Instance;                   // Used to keep a reference to the current Battle Event Instance
+
         [Header("Sub Variables")]
         public int gameOverIndex = 5;                       // The scene index that the game over scene is at. 
-        public Transform respawnPlayerLocation;             // The location that the player will respawn at when the battle is over
         public List<EnemyData> listOfEnemiesInFight;        // A list of all of the enemies that the event will spawn in the battle
 
         // Private Variables
@@ -29,6 +30,7 @@ namespace MattScripts {
         private float origCameraMaxY;
         private float origCameraMinZ;
         private float origCameraMaxZ;
+        private Vector3 respawnPlayerLocation;             // The location that the player will respawn at when the battle is over
 
         public int GoldReward {
             get { return goldReward; }
@@ -38,7 +40,19 @@ namespace MattScripts {
             get { return expReward; }
         }
 
-        // Sets up the private variables
+        // IMPORTANT
+        // Makes sure that when the player returns to the main scene after a battle, the enemy that was hosting this is destroyed
+		private void Awake()
+		{
+            if(Instance != null && Instance.name == this.name)
+            {
+                gameObject.transform.parent.gameObject.SetActive(false);
+                Destroy(gameObject.transform.parent.gameObject);
+                Instance = null;
+            }
+		}
+
+		// Sets up the private variables
 		private void Start()
 		{
             origSceneIndex = 0;
@@ -80,6 +94,8 @@ namespace MattScripts {
 
             // We make this object the parent of the GameManager so that we can have an easier time finding it
             gameObject.transform.parent = GameManager.Instance.gameObject.transform;
+            respawnPlayerLocation = GameManager.Instance.PlayerReference.gameObject.transform.position;
+            Instance = this;
 		}
 
         // We conclude the event and take the player back to the original scene
@@ -100,8 +116,7 @@ namespace MattScripts {
                 }
                 else if(controller.CurrentState == BattleStates.PLAYER_WIN)
                 {
-                    // We mark this event being completed permenatly.
-                    // And then warp them back using the saved coords and deactivate this event.
+                    // We warp them back using the saved coords and deactivate this event.
                     StartCoroutine(gameObject.GetComponent<TransitionArea>().GoToSpecificScene(origSceneIndex));
                 }
             }
@@ -119,7 +134,7 @@ namespace MattScripts {
             mainCamera.minXPos = origCameraMinX;
             mainCamera.minYPos = origCameraMinY;
             mainCamera.minZPos = origCameraMinZ;
-            player.WarpCharacter(respawnPlayerLocation.position);
+            player.WarpCharacter(respawnPlayerLocation);
             mainCamera.transform.position = origCameraLocation;
             mainCamera.transform.rotation = origCameraRotation;
         }
